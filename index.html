@@ -271,12 +271,24 @@
               <div style="font-size: 13px; font-weight: 800; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Select Document Type:</div>
               <div style="font-size: 11.5px; color: var(--text-muted);">Choose whether you are preparing an official Tax Invoice or an initial Client Quotation</div>
             </div>
-            <div class="doc-type-toggle-pills" style="display: flex; gap: 8px;">
-              <button type="button" class="btn btn-sm doc-type-btn active" id="btn-doc-type-invoice" onclick="window.dpvApp.setDocumentType('invoice')" style="min-width: 130px; font-weight: 700;">
-                <i data-lucide="file-text"></i> Tax Invoice
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+              <div class="doc-type-toggle-pills" style="display: flex; gap: 6px;">
+                <button type="button" class="btn btn-sm doc-type-btn active" id="btn-doc-type-invoice" onclick="window.dpvApp.setDocumentType('invoice')" style="min-width: 120px; font-weight: 700;">
+                  <i data-lucide="file-text"></i> Tax Invoice
+                </button>
+                <button type="button" class="btn btn-sm btn-outline doc-type-btn" id="btn-doc-type-quotation" onclick="window.dpvApp.setDocumentType('quotation')" style="min-width: 120px; font-weight: 700;">
+                  <i data-lucide="file-question"></i> Quotation
+                </button>
+              </div>
+              <div style="height: 24px; width: 1px; background: var(--border-color); margin: 0 4px;"></div>
+              <button type="button" class="btn btn-sm btn-primary" onclick="window.dpvApp.saveInvoiceFromForm()" style="font-weight: 700;">
+                <i data-lucide="save"></i> Save Bill
               </button>
-              <button type="button" class="btn btn-sm btn-outline doc-type-btn" id="btn-doc-type-quotation" onclick="window.dpvApp.setDocumentType('quotation')" style="min-width: 130px; font-weight: 700;">
-                <i data-lucide="file-question"></i> Quotation
+              <button type="button" class="btn btn-sm btn-accent" onclick="window.dpvApp.previewBuiltInvoice()" style="font-weight: 700;">
+                <i data-lucide="eye"></i> Preview &amp; Print
+              </button>
+              <button type="button" class="btn btn-sm btn-outline" onclick="window.dpvApp.saveAndExitInvoice()" title="Save and return to Invoices Directory">
+                <i data-lucide="check"></i> Save &amp; Close
               </button>
             </div>
           </div>
@@ -369,7 +381,8 @@
                     <input type="text" id="cust-notes-input" class="form-control" placeholder="Special customer preferences, family relations, references">
                   </div>
                 </div>
-                <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                  <button type="button" class="btn btn-outline btn-sm" onclick="window.dpvApp.saveInvoiceFromForm()"><i data-lucide="save"></i> Quick Save</button>
                   <button type="button" class="btn btn-primary" onclick="window.dpvApp.wizardNext(1)">Next: Event Details &rarr;</button>
                 </div>
               </div>
@@ -413,9 +426,12 @@
                     <textarea id="event-notes-input" class="form-control" placeholder="e.g. Drone permissions arranged, arrival at 9 AM, traditional rituals"></textarea>
                   </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
                   <button type="button" class="btn btn-outline" onclick="window.dpvApp.wizardPrev(2)">&larr; Back</button>
-                  <button type="button" class="btn btn-primary" onclick="window.dpvApp.wizardNext(2)">Next: Multiple Shooting Dates &rarr;</button>
+                  <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="window.dpvApp.saveInvoiceFromForm()"><i data-lucide="save"></i> Quick Save</button>
+                    <button type="button" class="btn btn-primary" onclick="window.dpvApp.wizardNext(2)">Next: Multiple Shooting Dates &rarr;</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -433,9 +449,12 @@
                 <div id="shoot-dates-container">
                   <!-- Dynamically populated shooting date cards -->
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
                   <button type="button" class="btn btn-outline" onclick="window.dpvApp.wizardPrev(3)">&larr; Back</button>
-                  <button type="button" class="btn btn-primary" onclick="window.dpvApp.wizardNext(3)">Next: Services, Albums &amp; Deliverables &rarr;</button>
+                  <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="window.dpvApp.saveInvoiceFromForm()"><i data-lucide="save"></i> Quick Save</button>
+                    <button type="button" class="btn btn-primary" onclick="window.dpvApp.wizardNext(3)">Next: Services, Albums &amp; Deliverables &rarr;</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -535,9 +554,12 @@
                   </div>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
                   <button type="button" class="btn btn-outline" onclick="window.dpvApp.wizardPrev(4)">&larr; Back</button>
-                  <button type="button" class="btn btn-primary" onclick="window.dpvApp.wizardNext(4)">Next: Payments &rarr;</button>
+                  <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="window.dpvApp.saveInvoiceFromForm()"><i data-lucide="save"></i> Quick Save</button>
+                    <button type="button" class="btn btn-primary" onclick="window.dpvApp.wizardNext(4)">Next: Payments &rarr;</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -591,9 +613,12 @@
                   </div>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
                   <button type="button" class="btn btn-outline" onclick="window.dpvApp.wizardPrev(5)">&larr; Back</button>
-                  <button type="button" class="btn btn-primary" onclick="window.dpvApp.wizardNext(5)">Next: Terms &amp; Conditions &rarr;</button>
+                  <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="window.dpvApp.saveInvoiceFromForm()"><i data-lucide="save"></i> Quick Save</button>
+                    <button type="button" class="btn btn-primary" onclick="window.dpvApp.wizardNext(5)">Next: Terms &amp; Conditions &rarr;</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -610,9 +635,12 @@
                 <div id="terms-selector-list" style="display: flex; flex-direction: column; gap: 8px;">
                   <!-- Dynamic terms checkboxes -->
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 8px;">
                   <button type="button" class="btn btn-outline" onclick="window.dpvApp.wizardPrev(6)">&larr; Back</button>
-                  <button type="button" class="btn btn-accent" onclick="window.dpvApp.previewBuiltInvoice()">Preview A4 Invoice &rarr;</button>
+                  <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-primary" onclick="window.dpvApp.saveInvoiceFromForm()"><i data-lucide="save"></i> Save Bill</button>
+                    <button type="button" class="btn btn-accent" onclick="window.dpvApp.previewBuiltInvoice()"><i data-lucide="eye"></i> Preview A4 Invoice &rarr;</button>
+                  </div>
                 </div>
               </div>
             </div>

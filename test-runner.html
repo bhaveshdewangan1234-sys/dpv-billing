@@ -471,6 +471,32 @@
       // Clean up test bill
       window.dpvStore.deleteInvoice(savedFullBill.id);
       assert("Cleaned up full test bill", window.dpvStore.getInvoiceById(savedFullBill.id) === null);
+
+      // 28. New Bill Creation & Draft Persistence (Fix for: new bill bna raha hu wo save nahi ho raha hai)
+      const newDraftBill = window.dpvInvoiceEngine.buildInvoiceObject({
+        invoiceNumber: "DPV/2026/NEWDRAFT1",
+        customer: { name: "New User Bill", phone: "9301614549" },
+        items: [{ name: "Pre-Wedding Shoot", rate: 20000, qty: 1 }],
+        payments: [{ type: "Advance", amount: 5000, method: "UPI" }],
+        isOfflineDraft: true
+      });
+      const savedNewDraft = window.dpvStore.saveInvoice(newDraftBill);
+      assert("New bill saved with isOfflineDraft: true", savedNewDraft && savedNewDraft.isOfflineDraft === true);
+      assert("New bill exists in store", window.dpvStore.getInvoiceById(savedNewDraft.id) !== null);
+
+      // When Firestore onSnapshot fires with empty array BEFORE write reaches server:
+      window.dpvStore.syncFromCloud([]);
+      assert("New bill is NOT wiped by empty cloud snapshot", window.dpvStore.getInvoiceById(savedNewDraft.id) !== null);
+
+      // When server snapshot confirms the bill:
+      window.dpvStore.syncFromCloud([
+        { ...savedNewDraft, isOfflineDraft: false }
+      ]);
+      assert("New bill confirmed and retained after cloud sync", window.dpvStore.getInvoiceById(savedNewDraft.id) !== null);
+
+      // Clean up test bill
+      window.dpvStore.deleteInvoice(savedNewDraft.id);
+      assert("Cleaned up new bill draft test", window.dpvStore.getInvoiceById(savedNewDraft.id) === null);
       const summaryDiv = document.createElement('div');
       summaryDiv.className = 'summary';
       summaryDiv.style.background = failed === 0 ? '#064e3b' : '#7f1d1d';
