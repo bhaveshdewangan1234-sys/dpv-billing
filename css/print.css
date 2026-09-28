@@ -1,0 +1,126 @@
+/**
+ * Dewangan Photo & Videography – Invoice Management System
+ * Dedicated Print Stylesheet (@media print) (Rule #34)
+ */
+
+@media print {
+  @page {
+    size: A4 portrait;
+    /* Safe margins (approx 0.8 inch / 20mm) on all 4 sides so physical printers never cut off Page 1 or Page 2 */
+    margin: 20mm 18mm 20mm 18mm;
+  }
+
+  /* Reset layout for pure paper printing */
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset App Shell containers to prevent any margin/padding offsets */
+  #app-container,
+  .app-container,
+  .main-wrapper,
+  #app-content,
+  .page-body {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: auto !important;
+    height: auto !important;
+    position: static !important;
+    float: none !important;
+    left: auto !important;
+    top: auto !important;
+  }
+
+  /* Hide entire Admin App Shell */
+  .sidebar,
+  .top-navbar,
+  .mobile-bottom-nav,
+  .preview-action-bar,
+  .modal-backdrop,
+  .toast-container,
+  .btn,
+  .no-print,
+  #app-content > *:not(#view-invoice-preview) {
+    display: none !important;
+  }
+
+  /* Display only invoice preview */
+  #view-invoice-preview {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+  }
+
+  .invoice-page-container {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+
+  .invoice-a4-sheet {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    transform: none !important;
+    /* Natural readable studio typography and clean sizing */
+    zoom: 0.90 !important;
+  }
+
+  /* Natural comfortable reading spacing */
+  .inv-inner-content {
+    padding: 8px 10mm 10px 10mm !important;
+    gap: 10px !important;
+  }
+
+  .inv-header-banner,
+  .inv-header-svg-bg,
+  .inv-bottom-black-bar {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Clean page breaks that never cut headers, cards, or tables */
+  .inv-header-banner,
+  .inv-title-bar-row,
+  .inv-details-row,
+  .inv-schedule-section,
+  .inv-event-services-section,
+  .inv-deliverables-section,
+  .inv-day-service-card,
+  .inv-deliv-group-card,
+  .inv-table-wrapper,
+  .inv-payment-totals-row,
+  .inv-terms-box,
+  .inv-bottom-signatures-row,
+  .inv-bottom-black-bar,
+  .inv-main-table tr,
+  .avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}

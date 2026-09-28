@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DPV Comprehensive Audit Suite</title>
+  <style>
+    body { font-family: monospace; background: #0b0f19; color: #f1f5f9; padding: 20px; line-height: 1.5; }
+    .pass { color: #22c55e; font-weight: bold; }
+    .fail { color: #ef4444; font-weight: bold; background: #450a0a; padding: 2px 6px; border-radius: 4px; }
+    .warn { color: #f59e0b; font-weight: bold; }
+    h2 { border-bottom: 2px solid #334155; padding-bottom: 8px; }
+    .suite-card { background: #1e293b; padding: 15px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #334155; }
+    .suite-title { font-size: 16px; font-weight: bold; color: #38bdf8; margin-bottom: 8px; }
+    #summary { font-size: 18px; padding: 12px; margin-top: 20px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h2>Dewangan Photo &amp; Videography – Full Automated System Audit</h2>
+  <div id="test-container"></div>
+  <div id="summary"></div>
+
+  <!-- App Dependencies -->
+  <script src="js/vendor/lucide.min.js"></script>
+  <script src="js/vendor/qrcode.min.js"></script>
+  <script src="js/vendor/html2pdf.bundle.min.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/invoice-engine.js"></script>
+  <script src="js/qr-helper.js"></script>
+  <script src="js/pdf-generator.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/backup.js"></script>
+
+  <script>
+    const container = document.getElementById('test-container');
+    const summary = document.getElementById('summary');
+    let passed = 0;
+    let failed = 0;
+    let warnings = 0;
+
+    function record(suite, desc, condition, errorMsg = '') {
+      let card = document.getElementById(`suite-${suite}`);
+      if (!card) {
+        card = document.createElement('div');
+        card.id = `suite-${suite}`;
+        card.className = 'suite-card';
+        card.innerHTML = `<div class="suite-title">[MODULE] ${suite}</div><div class="suite-body"></div>`;
+        container.appendChild(card);
+      }
+      const body = card.querySelector('.suite-body');
+      const row = document.createElement('div');
+      if (condition) {
+        row.innerHTML = `<span class="pass">✔ PASS</span> ${desc}`;
+        passed++;
+      } else {
+        row.innerHTML = `<span class="fail">✘ FAIL</span> ${desc} ${errorMsg ? ' - <em>' + errorMsg + '</em>' : ''}`;
+        failed++;
+        console.error(`FAILED: [${suite}] ${desc} : ${errorMsg}`);
+      }
+      body.appendChild(row);
+    }
+
+    async function runAudit() {
+      // 1. DPVStore Integrity
+      try {
+        await window.dpvStore.init();
+        record('Store', 'Store initializes without throwing', window.dpvStore.isReady);
+        
+        const settings = window.dpvStore.getSettings();
+        record('Store', 'Settings contains studioName', Boolean(settings.studioName));
+        record('Store', 'Settings contains headerTagline', Boolean(settings.headerTagline));
+        record('Store', 'Settings contains headerMemoriesTitle', Boolean(settings.headerMemoriesTitle));
+        record('Store', 'Settings contains headerMemoriesSub', Boolean(settings.headerMemoriesSub));
+        record('Store', 'Settings contains headerServices1', Boolean(settings.headerServices1));
+        record('Store', 'Settings contains headerServices2', Boolean(settings.headerServices2));
+        record('Store', 'Settings contains headerServices3', Boolean(settings.headerServices3));
+        record('Store', 'Settings contains headerQuote', Boolean(settings.headerQuote));
+        record('Store', 'Settings contains footerTagline', Boolean(settings.footerTagline));
+        record('Store', 'Settings contains mobile number', Boolean(settings.mobile));
+        record('Store', 'Settings contains upiId', Boolean(settings.upiId));
+        record('Store', 'Settings contains logoUrl', Boolean(settings.logoUrl));
+
+        // Invoice CRUD
+        const invs = window.dpvStore.getInvoices();
+        record('Store', 'Demo invoices are seeded', invs.length > 0);
+
+        // Customer CRUD
+        const customers = window.dpvStore.getCustomers();
+        record('Store', 'Customers are seeded', customers.length > 0);
+
+        // Services CRUD
+        const services = window.dpvStore.getServices();
+        record('Store', 'Services are seeded', services.length >= 8);
+
+        // Packages CRUD
+        const packages = window.dpvStore.getPackages();
+        record('Store', 'Packages are seeded', packages.length >= 3);
+
+        // Terms CRUD
+        const terms = window.dpvStore.getTerms();
+        record('Store', '8 Standard Terms are seeded', terms.length === 8);
+
+        // Next invoice number
+        const nextNum = window.dpvStore.getNextInvoiceNumber();
+        record('Store', 'Sequence numbering format correct', /^DPV\/\d{4}\/\d{4}$/.test(nextNum));
+
+      } catch (err) {
+        record('Store', 'Store fatal error', false, err.message);
+      }
+
+      // 2. Authentication Integrity
+      try {
+        const u = window.dpvAuth.login('admin', 'DPV@9301614549Kumar', false);
+        record('Auth', 'Valid admin credentials log in', Boolean(u && u.username === 'admin'));
+
+        let threw = false;
+        try { window.dpvAuth.login('admin', 'badpass', false); } catch(e) { threw = true; }
+        record('Auth', 'Invalid password rejected', threw);
+
+        record('Auth', 'Current session is verified', window.dpvAuth.verifySession());
+      } catch (err) {
+        record('Auth', 'Auth fatal error', false, err.message);
+      }
+
+      // 3. Invoice Calculation & Financials Engine
+      try {
+        const testItems = [
+          { name: "Wedding Photography", rate: 25000, qty: 1, discount: 0 },
+          { name: "Wedding Videography", rate: 30000, qty: 1, discount: 0 },
+          { name: "Album Design & Printing", rate: 8000, qty: 1, discount: 0 }
+        ];
+
+        // Zero payments
+        const r1 = window.dpvInvoiceEngine.calculateFinancials(testItems, [], { overallDiscount: 3000, enableGst: false });
+        record('Engine', 'Raw Subtotal calculation', r1.financials.rawSubtotal === 63000);
+        record('Engine', 'Grand total with discount', r1.financials.grandTotal === 60000);
+        record('Engine', 'Balance due unpaid', r1.financials.balanceDue === 60000);
+        record('Engine', 'Status is PENDING when zero paid', r1.paymentStatus === 'PENDING');
+
+        // Partial payment
+        const r2 = window.dpvInvoiceEngine.calculateFinancials(testItems, [{ amount: 25000, method: 'UPI' }], { overallDiscount: 3000, enableGst: false });
+        record('Engine', 'Balance due partial', r2.financials.balanceDue === 35000);
+        record('Engine', 'Status is PARTIALLY PAID', r2.paymentStatus === 'PARTIALLY PAID');
+
+        // Full payment
+        const r3 = window.dpvInvoiceEngine.calculateFinancials(testItems, [{ amount: 60000, method: 'UPI' }], { overallDiscount: 3000, enableGst: false });
+        record('Engine', 'Balance due zero', r3.financials.balanceDue === 0);
+        record('Engine', 'Status is PAID when fully settled', r3.paymentStatus === 'PAID');
+
+        // GST calculation check
+        const rGst = window.dpvInvoiceEngine.calculateFinancials(testItems, [], { overallDiscount: 0, enableGst: true, gstRate: 18 });
+        record('Engine', 'GST computation (18% of 63,000 = 11,340)', rGst.financials.taxAmount === 11340);
+        record('Engine', 'Grand total includes GST (74,340)', rGst.financials.grandTotal === 74340);
+
+      } catch (err) {
+        record('Engine', 'Engine calculation fatal error', false, err.message);
+      }
+
+      // 4. UPI & QR Helper
+      try {
+        const upiUri = window.dpvQrHelper.generateInvoiceUpiString({
+          upiId: '9301614549@ybl',
+          payeeName: 'Dewangan Photo & Videography',
+          invoiceNumber: 'DPV/2026/0001',
+          amount: 25000
+        });
+        record('QR Helper', 'UPI URI formatted properly', upiUri.startsWith('upi://pay?'));
+        record('QR Helper', 'UPI URI contains payee and amount', upiUri.includes('pa=9301614549@ybl') && upiUri.includes('am=25000'));
+
+        const qrData = await window.dpvQrHelper.generateQrCodeDataUrl(upiUri);
+        record('QR Helper', 'QR Code generates base64 PNG data URL', Boolean(qrData && qrData.startsWith('data:image/png;base64')));
+      } catch (err) {
+        record('QR Helper', 'QR Helper fatal error', false, err.message);
+      }
+
+      // 5. Calendar Engine
+      try {
+        const events = window.dpvCalendar.getAllShootingEvents();
+        record('Calendar', 'Shooting events aggregated', Array.isArray(events));
+        const upcoming = window.dpvCalendar.getUpcomingShoots();
+        record('Calendar', 'Upcoming shoots list returned', Array.isArray(upcoming));
+      } catch (err) {
+        record('Calendar', 'Calendar fatal error', false, err.message);
+      }
+
+      // 6. Backup & CSV Engine
+      try {
+        const backupData = window.dpvBackup.createBackupData();
+        record('Backup', 'Backup contains settings', Boolean(backupData.data && backupData.data.settings));
+        record('Backup', 'Backup contains invoices', Array.isArray(backupData.data && backupData.data.invoices));
+        record('Backup', 'Backup contains customers', Array.isArray(backupData.data && backupData.data.customers));
+        record('Backup', 'Backup validation succeeds', window.dpvBackup.validateBackup(backupData));
+      } catch (err) {
+        record('Backup', 'Backup fatal error', false, err.message);
+      }
+
+      // 7. Assets Verification (Check if required images exist)
+      const requiredImages = [
+        'assets/dpv-official-logo.png',
+        'assets/header-camera-bokeh.png',
+        'assets/dpv-logo.svg',
+        'manifest.webmanifest',
+        'sw.js'
+      ];
+
+      for (const imgUrl of requiredImages) {
+        try {
+          const resp = await fetch(imgUrl);
+          record('Assets', `Asset exists: ${imgUrl}`, resp.ok, `Status: ${resp.status}`);
+        } catch (e) {
+          record('Assets', `Asset exists: ${imgUrl}`, false, e.message);
+        }
+      }
+
+      // Summary
+      summary.className = failed === 0 ? 'pass' : 'fail';
+      summary.innerHTML = `AUDIT FINISHED: ${passed} PASSED, ${failed} FAILED`;
+      console.log(`AUDIT FINISHED: ${passed} PASSED, ${failed} FAILED`);
+    }
+
+    window.onload = runAudit;
+  </script>
+</body>
+</html>

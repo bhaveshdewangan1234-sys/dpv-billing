@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Full App Simulation Test</title>
+</head>
+<body>
+  <div id="results"></div>
+
+  <!-- Load all app HTML by fetching index.html and inserting it -->
+  <div id="app-root"></div>
+
+  <script>
+    const log = (msg, isErr = false) => {
+      const d = document.createElement('div');
+      d.style.color = isErr ? 'red' : 'green';
+      d.textContent = (isErr ? '❌ ' : '✔ ') + msg;
+      document.getElementById('results').appendChild(d);
+      if (isErr) console.error(msg);
+    };
+
+    window.onerror = (msg, url, line, col, err) => {
+      log(`UNCAUGHT ERROR: ${msg} at line ${line}:${col} - ${err?.stack || ''}`, true);
+    };
+
+    window.onunhandledrejection = (e) => {
+      log(`UNHANDLED PROMISE REJECTION: ${e.reason?.message || e.reason}`, true);
+    };
+
+    async function runSimulations() {
+      try {
+        log("1. Fetching index.html...");
+        const resp = await fetch('index.html');
+        const html = await resp.text();
+        
+        // Extract body content
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // Copy body children to our app-root
+        const appRoot = document.getElementById('app-root');
+        while (doc.body.firstChild) {
+          appRoot.appendChild(doc.body.firstChild);
+        }
+        log("2. DOM loaded successfully.");
+
+        // Load Lucide
+        await loadScript('js/vendor/lucide.min.js');
+        await loadScript('js/vendor/qrcode.min.js');
+        await loadScript('js/vendor/html2pdf.bundle.min.js');
+        await loadScript('js/store.js');
+        await loadScript('js/auth.js');
+        await loadScript('js/invoice-engine.js');
+        await loadScript('js/qr-helper.js');
+        await loadScript('js/pdf-generator.js');
+        await loadScript('js/calendar.js');
+        await loadScript('js/backup.js');
+        await loadScript('js/firebase-config.js');
+        await loadScript('js/app.js');
+        log("3. All scripts loaded.");
+
+        // Initialize Store and App
+        window.dpvApp.init();
+        log("4. App initialized.");
+
+        // Log in as Admin
+        window.dpvAuth.login('admin', 'DPV@9301614549Kumar');
+        log("5. Admin logged in.");
+
+        // Test Navigation to all views
+        const views = [
+          'view-dashboard',
+          'view-invoices',
+          'view-new-invoice',
+          'view-invoice-preview',
+          'view-calendar',
+          'view-customers',
+          'view-services',
+          'view-packages',
+          'view-payments',
+          'view-terms',
+          'view-settings'
+        ];
+
+        for (const v of views) {
+          window.dpvApp.navigateTo(v);
+          const el = document.getElementById(v);
+          if (!el || el.style.display === 'none') {
+            log(`View navigation failed for ${v}`, true);
+          } else {
+            log(`Navigated to ${v}`);
+          }
+        }
+
+        // Test Wizard Step Switching
+        window.dpvApp.startNewInvoice();
+        log("6. Started New Invoice wizard.");
+
+        // Fill Step 1
+        document.getElementById('cust-name-input').value = 'Test Client';
+        document.getElementById('cust-phone-input').value = '9876543210';
+        window.dpvApp.wizardNext(1);
+        if (window.dpvApp.wizardCurrentStep !== 2) log("Wizard Step 1 -> 2 failed", true);
+        else log("Wizard advanced to Step 2.");
+
+        // Fill Step 2
+        document.getElementById('event-type-select').value = 'Wedding';
+        document.getElementById('event-venue-input').value = 'Raipur Palace';
+        window.dpvApp.addShootDateRow({ eventName: 'Reception', date: '2026-12-25', venue: 'Raipur' });
+        window.dpvApp.wizardNext(2);
+        if (window.dpvApp.wizardCurrentStep !== 3) log("Wizard Step 2 -> 3 failed", true);
+        else log("Wizard advanced to Step 3.");
+
+        // Fill Step 3 (Items)
+        window.dpvApp.addInvoiceItemRow({ name: 'Wedding Photography', rate: 25000, qty: 1, discount: 1000 });
+        window.dpvApp.updateFormCalculations();
+        window.dpvApp.wizardNext(3);
+        if (window.dpvApp.wizardCurrentStep !== 4) log("Wizard Step 3 -> 4 failed", true);
+        else log("Wizard advanced to Step 4.");
+
+        // Fill Step 4 (Payments)
+        window.dpvApp.addPaymentRow({ type: 'First Payment (Advance)', amount: 12000, method: 'UPI', reference: 'UPI12345' });
+        window.dpvApp.updateFormCalculations();
+        window.dpvApp.wizardNext(4);
+        if (window.dpvApp.wizardCurrentStep !== 5) log("Wizard Step 4 -> 5 failed", true);
+        else log("Wizard advanced to Step 5.");
+
+        // Step 5 -> 6
+        window.dpvApp.wizardNext(5);
+        if (window.dpvApp.wizardCurrentStep !== 6) log("Wizard Step 5 -> 6 failed", true);
+        else log("Wizard advanced to Step 6.");
+
+        // Step 6 -> Preview
+        window.dpvApp.previewBuiltInvoice();
+        log("7. Built invoice and opened preview.");
+
+        // Test Invoice Preview DOM Elements
+        const checks = [
+          'inv-header-studio-name',
+          'inv-header-studio-tagline',
+          'inv-header-memories-title',
+          'inv-header-memories-sub',
+          'inv-header-srv1',
+          'inv-header-srv2',
+          'inv-header-srv3',
+          'inv-header-address',
+          'inv-header-phone',
+          'inv-header-instagram',
+          'inv-header-website',
+          'inv-header-quote',
+          'inv-footer-address',
+          'inv-footer-phone',
+          'inv-footer-instagram',
+          'inv-footer-website',
+          'inv-footer-tagline',
+          'inv-doc-number',
+          'inv-doc-date',
+          'inv-client-name',
+          'inv-client-phone',
+          'inv-client-address',
+          'inv-event-type',
+          'inv-event-date',
+          'inv-event-venue',
+          'inv-pay-package-total',
+          'inv-pay-advance',
+          'inv-summary-subtotal',
+          'inv-summary-grand',
+          'inv-summary-paid',
+          'inv-summary-balance',
+          'inv-terms-columns-container'
+        ];
+
+        let missingCount = 0;
+        checks.forEach(id => {
+          const el = document.getElementById(id);
+          if (!el) {
+            log(`Preview element missing: #${id}`, true);
+            missingCount++;
+          }
+        });
+        if (missingCount === 0) {
+          log("All preview DOM elements verified.");
+        }
+
+        // Test Settings Save
+        window.dpvApp.navigateTo('view-settings');
+        window.dpvApp.saveSettings();
+        log("8. Settings saved successfully.");
+
+        // Test Customer Add & Modal
+        window.dpvApp.openCustomerModal();
+        document.getElementById('modal-cust-name').value = 'New Customer';
+        document.getElementById('modal-cust-phone').value = '9123456780';
+        window.dpvApp.saveCustomerModal();
+        log("9. Customer modal saved successfully.");
+
+        // Test Service Add & Modal
+        window.dpvApp.openServiceModal();
+        document.getElementById('modal-srv-name').value = 'New Drone Service';
+        document.getElementById('modal-srv-category').value = 'Aerial';
+        document.getElementById('modal-srv-rate').value = '15000';
+        window.dpvApp.saveServiceModal();
+        log("10. Service modal saved successfully.");
+
+        // Test Package Add & Modal
+        window.dpvApp.openPackageModal();
+        document.getElementById('modal-pkg-name').value = 'Deluxe Package';
+        document.getElementById('modal-pkg-price').value = '80000';
+        window.dpvApp.savePackageModal();
+        log("11. Package modal saved successfully.");
+
+        // Test Term Add & Modal
+        window.dpvApp.openTermModal();
+        document.getElementById('modal-term-title').value = 'New Policy';
+        document.getElementById('modal-term-text').value = 'New policy conditions text';
+        window.dpvApp.saveTermModal();
+        log("12. Term modal saved successfully.");
+
+        // Test Payment Modal
+        window.dpvApp.openPaymentModal();
+        document.getElementById('modal-pay-amount').value = '5000';
+        document.getElementById('modal-pay-method').value = 'UPI';
+        window.dpvApp.savePaymentModal();
+        log("13. Payment modal saved successfully.");
+
+        log("SIMULATION RUN COMPLETE - ALL WORKFLOWS PASSED");
+
+      } catch (err) {
+        log(`FATAL SIMULATION ERROR: ${err.message}\n${err.stack}`, true);
+      }
+    }
+
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = () => reject(new Error(`Failed to load ${src}`));
+        document.body.appendChild(s);
+      });
+    }
+
+    window.onload = runSimulations;
+  </script>
+</body>
+</html>

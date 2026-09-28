@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DPV Invoice Management - Automated Verification Test Runner</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #0f172a; color: #f8fafc; }
+    .pass { color: #4ade80; font-weight: bold; }
+    .fail { color: #f87171; font-weight: bold; }
+    .summary { margin-top: 20px; padding: 15px; border-radius: 8px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h2>Dewangan Photo &amp; Videography – Verification Test Runner</h2>
+  <div id="test-output"></div>
+
+  <!-- Scripts to Test -->
+  <script src="js/vendor/qrcode.min.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/invoice-engine.js"></script>
+  <script src="js/qr-helper.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/backup.js"></script>
+
+  <script>
+    const output = document.getElementById('test-output');
+    let passed = 0;
+    let failed = 0;
+
+    function assert(description, condition) {
+      const line = document.createElement('div');
+      if (condition) {
+        line.innerHTML = `<span class="pass">[PASS]</span> ${description}`;
+        passed++;
+      } else {
+        line.innerHTML = `<span class="fail">[FAIL]</span> ${description}`;
+        failed++;
+      }
+      output.appendChild(line);
+    }
+
+    async function runAllTests() {
+      try {
+        // 1. DPVStore Tests
+      await window.dpvStore.init();
+      assert("DPVStore initializes with memory defaults", window.dpvStore.isReady);
+      
+      const settings = window.dpvStore.getSettings();
+      assert("Default studio name is 'Dewangan Photo & Videography'", settings.studioName === "Dewangan Photo & Videography");
+      assert("Default mobile contains 93403 or 9301614549", settings.mobile.includes("93403") || settings.mobile.includes("9301614549"));
+      assert("Default UPI ID is '9301614549@ybl'", settings.upiId === "9301614549@ybl");
+
+      // 2. Numbering Sequence Test
+      const nextNum1 = window.dpvStore.getNextInvoiceNumber();
+      assert("Next invoice number matches format DPV/YYYY/0001", /^DPV\/\d{4}\/\d{4}$/.test(nextNum1));
+
+      // 3. Auth Tests
+      const authUser = window.dpvAuth.login("admin", "DPV@9301614549Kumar", false);
+      assert("Admin can authenticate successfully", authUser && authUser.role === 'admin');
+      
+      let authFailed = false;
+      try {
+        window.dpvAuth.login("admin", "WrongPassword123", false);
+      } catch (e) {
+        authFailed = true;
+      }
+      assert("Login rejects incorrect password", authFailed);
+
+      // 4. Financial Calculations Test
+      const items = [
+        { name: "Wedding Photography", rate: 25000, qty: 1, discount: 0 },
+        { name: "Wedding Videography", rate: 30000, qty: 1, discount: 0 },
+        { name: "Drone Coverage", rate: 10000, qty: 1, discount: 0 }
+      ];
+      const calc1 = window.dpvInvoiceEngine.calculateFinancials(items, [], { overallDiscount: 5000, enableGst: false });
+      assert("Subtotal calculates accurately (65,000)", calc1.financials.rawSubtotal === 65000);
+      assert("Grand total after discount calculates accurately (60,000)", calc1.financials.grandTotal === 60000);
+      assert("Balance due equals grand total when 0 paid (60,000)", calc1.financials.balanceDue === 60000);
+      assert("Payment status is PENDING when unpaid", calc1.paymentStatus === 'PENDING');
+
+      // Test with partial payment
+      const payments = [
+        { type: "Advance Payment", amount: 20000, method: "UPI" }
+      ];
+      const calc2 = window.dpvInvoiceEngine.calculateFinancials(items, payments, { overallDiscount: 5000, enableGst: false });
+      assert("Balance due accurately reduced after partial payment (40,000)", calc2.financials.balanceDue === 40000);
+      assert("Payment status is PARTIALLY PAID after partial payment", calc2.paymentStatus === 'PARTIALLY PAID');
+
+      // Test with full payment
+      const fullPayments = [
+        { type: "Advance Payment", amount: 20000, method: "UPI" },
+        { type: "Final Payment", amount: 40000, method: "Bank Transfer" }
+      ];
+      const calc3 = window.dpvInvoiceEngine.calculateFinancials(items, fullPayments, { overallDiscount: 5000, enableGst: false });
+      assert("Balance due is 0 when fully paid", calc3.financials.balanceDue === 0);
+      assert("Payment status is PAID when fully paid", calc3.paymentStatus === 'PAID');
+
+      // 5. Rule #32: Snapshot Immutability Test
+      const testInvoice = window.dpvInvoiceEngine.buildInvoiceObject({
+        invoiceNumber: nextNum1,
+        customer: { name: "Immutability Test Customer", phone: "9876543210" },
+        event: { type: "Wedding", venue: "Balod Grand Hall" },
+        shootingDates: [
+          { dayNumber: 1, date: "2026-12-12", eventName: "Haldi" },
+          { dayNumber: 2, date: "2026-12-13", eventName: "Wedding" }
+        ],
+        items: [{ name: "Original Service", rate: 25000, qty: 1 }],
+        payments: [{ amount: 10000, method: "UPI" }]
+      });
+      const finalized = window.dpvInvoiceEngine.finalizeInvoice(testInvoice);
+      assert("Invoice finalized and saved to store", finalized.status === 'finalized');
+      assert("Finalized invoice contains frozen business snapshot", finalized.businessSnapshot && finalized.businessSnapshot.studioName === "Dewangan Photo & Videography");
+
+      // Mutate global store settings
+      window.dpvStore.updateSettings({ studioName: "Modified Studio Brand Test" });
+      
+      // Verify finalized invoice did NOT change!
+      const fetchedFinalized = window.dpvStore.getInvoiceById(finalized.id);
+      assert("RULE #32 VERIFIED: Finalized invoice retains original snapshot after global settings update", fetchedFinalized.businessSnapshot.studioName === "Dewangan Photo & Videography");
+
+      // Reset studio name
+      window.dpvStore.updateSettings({ studioName: "Dewangan Photo & Videography" });
+
+      // 6. Shooting Dates & Calendar Test
+      const events = window.dpvCalendar.getAllShootingEvents();
+      const haldiEvent = events.find(e => e.eventName === 'Haldi');
+      assert("Multiple shooting dates indexed in shooting calendar", haldiEvent && haldiEvent.date === "2026-12-12");
+
+      // 7. UPI QR Helper Test
+      const upiString = window.dpvQRHelper.generateUpiString({
+        upiId: "9301614549@ybl",
+        payeeName: "Dewangan Photo & Videography",
+        amount: 15000,
+        invoiceNumber: "DPV/2026/0001"
+      });
+      assert("UPI String formatted with correct intent URI", upiString.startsWith("upi://pay?pa=9301614549%40ybl") && upiString.includes("am=15000.00"));
+
+      // 8. Backup Export Test
+      const backupJson = window.dpvStore.exportAllData();
+      assert("Backup export produces valid JSON string", typeof backupJson === 'string' && backupJson.includes("Dewangan Photo & Videography"));
+
+      // 9. Quotation Numbering & Workflow Test
+      const nextQuoteNum = window.dpvStore.getNextQuotationNumber();
+      assert("Next quotation number matches format DPV/Q/YYYY/0001", /^DPV\/Q\/\d{4}\/\d{4}$/.test(nextQuoteNum));
+
+      const testQuote = window.dpvInvoiceEngine.buildInvoiceObject({
+        documentType: 'quotation',
+        customer: { name: "Quotation Test Customer", phone: "9876543211", altPhone: "9123456789" },
+        event: { type: "Pre-Wedding" },
+        shootingDates: [
+          { dayNumber: 1, date: "2026-11-20", eventName: "Pre-Wedding Shoot", services: ["Candid Photography", "Cinematography Film"], location: "Raipur" }
+        ],
+        items: [{ name: "Cinematic Pre-Wedding Package", rate: 35000, qty: 1 }],
+        payments: []
+      });
+      assert("Quotation object created with documentType = 'quotation'", testQuote.documentType === 'quotation');
+      assert("Quotation contains alternate phone", testQuote.customer.altPhone === "9123456789");
+      assert("Quotation number starts with DPV/Q/", testQuote.invoiceNumber.startsWith("DPV/Q/"));
+
+      const finalizedQuote = window.dpvInvoiceEngine.finalizeInvoice(testQuote);
+      assert("Quotation finalized and saved in store", finalizedQuote.status === 'finalized');
+
+      // 10. Quotation to Confirmed Invoice Conversion Test
+      const convertedInvoice = window.dpvStore.convertQuotationToInvoice(finalizedQuote.id);
+      assert("Converted quotation is now documentType = 'invoice'", convertedInvoice.documentType === 'invoice');
+      assert("Converted invoice preserves quotationNumber reference", convertedInvoice.quotationNumber.startsWith("DPV/Q/"));
+      assert("Converted invoice gets new confirmed invoiceNumber without Q prefix", /^DPV\/\d{4}\/\d{4}$/.test(convertedInvoice.invoiceNumber));
+
+      // 11. Flexible Payment Ordinals Test
+      assert("Payment 1 returns 'First Payment (Advance)'", window.dpvStore.getPaymentOrdinal(1) === "First Payment (Advance)");
+      assert("Payment 2 returns 'Second Payment'", window.dpvStore.getPaymentOrdinal(2) === "Second Payment");
+      assert("Payment 3 returns 'Third Payment'", window.dpvStore.getPaymentOrdinal(3) === "Third Payment");
+      assert("Payment 4 returns 'Fourth Payment'", window.dpvStore.getPaymentOrdinal(4) === "Fourth Payment");
+      assert("Payment 15 returns dynamic label 'Payment 15'", window.dpvStore.getPaymentOrdinal(15) === "Payment 15");
+
+      // 12. Service Catalog Autocomplete Test
+      const services = window.dpvStore.getServices();
+      assert("Standard service catalog contains 18 default services", services && services.length >= 18);
+      const droneService = services.find(s => s.name && s.name.toLowerCase().includes("drone"));
+      assert("Service catalog includes Drone Coverage", !!droneService);
+
+      // 13. Customer Directory Profile & Ledger Aggregation Test
+      const testCust = window.dpvStore.saveCustomer({
+        name: "Ledger Test Client",
+        phone: "9111222333",
+        altPhone: "9444555666",
+        city: "Durg"
+      });
+      assert("Customer saved with unique ID", testCust && testCust.id);
+
+      // Create an invoice tied to this customer with multi-day shooting and payment history
+      const custInvoice = window.dpvInvoiceEngine.buildInvoiceObject({
+        invoiceNumber: window.dpvStore.getNextInvoiceNumber(),
+        customer: { id: testCust.id, name: testCust.name, phone: testCust.phone, altPhone: testCust.altPhone },
+        event: { type: "Wedding" },
+        shootingDates: [
+          { dayNumber: 1, date: "2026-12-01", eventName: "Sangeet Ceremony", services: ["Traditional Photography"], location: "Durg" },
+          { dayNumber: 2, date: "2026-12-02", eventName: "Wedding Ceremony", services: ["Traditional Photography", "Candid Photography"], location: "Bhilai" }
+        ],
+        items: [{ name: "Wedding Photography", rate: 50000, qty: 1 }],
+        payments: [
+          { amount: 20000, method: "UPI", date: "2026-11-01" },
+          { amount: 15000, method: "Cash", date: "2026-11-15" }
+        ]
+      });
+      window.dpvInvoiceEngine.finalizeInvoice(custInvoice);
+
+      const ledger = window.dpvStore.getCustomerBookings(testCust.id);
+      assert("Customer ledger identifies associated invoices", ledger.invoices.length >= 1);
+      assert("Customer ledger aggregates all shooting dates across bookings", ledger.shoots.length >= 2);
+      assert("Customer ledger aggregates all payment records", ledger.payments.length >= 2);
+      assert("Customer ledger calculates total billed correctly (50,000)", ledger.totalBilled === 50000);
+      assert("Customer ledger calculates total paid correctly (35,000)", ledger.totalPaid === 35000);
+      assert("Customer ledger calculates balance due correctly (15,000)", ledger.balanceDue === 15000);
+
+      // Customer delete test
+      const delSuccess = window.dpvStore.deleteCustomer(testCust.id);
+      assert("Customer deleted cleanly from directory", delSuccess && !window.dpvStore.getCustomerById(testCust.id));
+
+      // 14. Photo Albums Specification Builder Test
+      const albumInvoice = window.dpvInvoiceEngine.buildInvoiceObject({
+        invoiceNumber: "DPV/2026/9001",
+        customer: { name: "Album Test Client", phone: "9876543210" },
+        event: { type: "Wedding Shoot" },
+        albums: [
+          { type: "NT Album", sheets: "30 Sheets", size: "12 × 18 inch", qty: 1, notes: "Leather briefcase included" },
+          { type: "Premium Canvera Album", sheets: "40 Sheets", size: "12 × 36 inch", qty: 2, notes: "Metallic paper" }
+        ],
+        deliverables: [
+          { name: "Wedding Calendar", type: "Desktop Tent 2027", size: "8 × 6 inch", qty: 1, notes: "Couple portraits" },
+          { name: "Pen Drive", type: "Metal 64GB USB 3.0", size: "64 GB", qty: 1, notes: "4K Master video" },
+          { name: "Photo Frame", type: "Acrylic Glass Frame", size: "12 × 18 inch", qty: 1, notes: "Stage portrait" }
+        ],
+        items: [{ name: "Complete Wedding Photography", rate: 60000, qty: 1 }]
+      });
+
+      assert("Albums array preserved with 2 items", albumInvoice.albums && albumInvoice.albums.length === 2);
+      assert("First album is 'NT Album' with 30 Sheets and size 12 × 18 inch", 
+        albumInvoice.albums[0].type === "NT Album" && 
+        albumInvoice.albums[0].sheets === "30 Sheets" && 
+        albumInvoice.albums[0].size === "12 × 18 inch" && 
+        albumInvoice.albums[0].qty === 1
+      );
+      assert("Second album has qty 2 and 40 Sheets", 
+        albumInvoice.albums[1].type === "Premium Canvera Album" && 
+        albumInvoice.albums[1].qty === 2 && 
+        albumInvoice.albums[1].sheets === "40 Sheets"
+      );
+
+      // 15. Deliverables & Special Items Preservation Test
+      assert("Deliverables array preserved with 3 items", albumInvoice.deliverables && albumInvoice.deliverables.length === 3);
+      assert("Wedding Calendar deliverable preserved with exact specs", 
+        albumInvoice.deliverables[0].name === "Wedding Calendar" && 
+        albumInvoice.deliverables[0].type === "Desktop Tent 2027" && 
+        albumInvoice.deliverables[0].qty === 1
+      );
+      assert("Pen Drive deliverable preserved with 64GB spec", 
+        albumInvoice.deliverables[1].name === "Pen Drive" && 
+        albumInvoice.deliverables[1].size === "64 GB"
+      );
+
+      // 16. Date-Wise Event Specific Timing & Service Isolation Test
+      const multiEventInv = window.dpvInvoiceEngine.buildInvoiceObject({
+        invoiceNumber: "DPV/2026/9002",
+        customer: { name: "Multi Event Client", phone: "9876543210" },
+        event: { type: "Wedding" },
+        shootingDates: [
+          {
+            dayNumber: 1,
+            date: "2026-12-10",
+            eventName: "Churmaati",
+            timings: "05:00 PM – 09:00 PM",
+            venue: "Home Lawn",
+            services: [
+              { name: "Traditional Photography", timings: "05:00 PM – 09:00 PM", notes: "Rituals" }
+            ]
+          },
+          {
+            dayNumber: 2,
+            date: "2026-12-11",
+            eventName: "Reception",
+            timings: "07:00 PM – 11:00 PM",
+            venue: "Grand Hall",
+            services: [
+              { name: "Traditional Photography", timings: "07:00 PM – 11:00 PM", notes: "Stage coverage" },
+              { name: "Drone Coverage", timings: "07:00 PM – 08:00 PM", notes: "Only for Reception — Grand Entry" }
+            ]
+          }
+        ],
+        items: [{ name: "Photography & Drone", rate: 45000, qty: 1 }]
+      });
+
+      assert("Multi-event booking has exactly 2 shooting dates", multiEventInv.shootingDates.length === 2);
+      assert("Day 1 (Churmaati) contains exactly 1 service (Traditional Photography)", 
+        multiEventInv.shootingDates[0].services.length === 1 && 
+        multiEventInv.shootingDates[0].services[0].name === "Traditional Photography"
+      );
+      assert("Day 1 does NOT contain Drone Coverage (strict event isolation)", 
+        !multiEventInv.shootingDates[0].services.some(s => s.name.includes("Drone"))
+      );
+      assert("Day 2 (Reception) contains Drone Coverage with specific timing 07:00 PM – 08:00 PM", 
+        multiEventInv.shootingDates[1].services.some(s => s.name === "Drone Coverage" && s.timings === "07:00 PM – 08:00 PM" && s.notes.includes("Only for Reception"))
+      );
+
+      // 17. Official DPV Logo & Brand Details Test
+      const officialSettings = window.dpvStore.getSettings();
+      assert("Official logo path set to assets/dpv-official-logo.png", officialSettings.logoUrl === "assets/dpv-official-logo.png");
+      assert("Official mobile is 9340363046", officialSettings.mobile.includes("93403"));
+      assert("Official footer tagline is 'Capture Your Moments'", officialSettings.footerTagline === "Capture Your Moments");
+      assert("Official Instagram handle is dewangan_photo_and_videography", officialSettings.instagram === "dewangan_photo_and_videography");
+      assert("Official website is www.dewanganphotoandvideography.in", officialSettings.website === "www.dewanganphotoandvideography.in");
+
+      // 18. Unlimited Installments & Running Balance Calculation Sequence Test (Master Requirement)
+      // Total ₹60,000; Pay 1: ₹10k -> Bal ₹50k; Pay 2: ₹10k -> Bal ₹40k; Pay 3: ₹20k -> Bal ₹20k; Pay 4: ₹20k -> Bal ₹0
+      const runBalInv = window.dpvInvoiceEngine.buildInvoiceObject({
+        invoiceNumber: "DPV/2026/RB01",
+        customer: { name: "Running Balance Client", phone: "9876543299" },
+        event: { type: "Wedding" },
+        items: [{ name: "Complete Wedding Package", rate: 60000, qty: 1 }],
+        payments: [
+          { id: "pay_rb_1", type: "Advance Payment", amount: 10000, method: "UPI", date: "2026-10-01" },
+          { id: "pay_rb_2", type: "Second Payment", amount: 10000, method: "UPI", date: "2026-10-15" },
+          { id: "pay_rb_3", type: "Third Payment", amount: 20000, method: "Bank Transfer", date: "2026-11-01" },
+          { id: "pay_rb_4", type: "Fourth Payment", amount: 20000, method: "Cash", date: "2026-11-15" }
+        ]
+      });
+
+      const compiledRB = window.dpvInvoiceEngine.compileInvoice(runBalInv);
+      assert("Running Balance Grand Total is ₹60,000", compiledRB.financials.grandTotal === 60000);
+      assert("Installment 1 has balanceAfter = ₹50,000", compiledRB.payments[0].balanceAfter === 50000);
+      assert("Installment 2 has balanceAfter = ₹40,000", compiledRB.payments[1].balanceAfter === 40000);
+      assert("Installment 3 has balanceAfter = ₹20,000", compiledRB.payments[2].balanceAfter === 20000);
+      assert("Installment 4 has balanceAfter = ₹0", compiledRB.payments[3].balanceAfter === 0);
+      assert("Installment 4 is auto-recognized as 'Final Payment'", compiledRB.payments[3].type === "Final Payment");
+      assert("Invoice paymentStatus is 'PAID' when balance reaches ₹0", compiledRB.paymentStatus === 'PAID');
+      assert("Total Paid is ₹60,000 and Balance Due is ₹0", compiledRB.financials.totalPaid === 60000 && compiledRB.financials.balanceDue === 0);
+
+      // 19. Payment Edit in Store Test
+      const savedRBInv = window.dpvInvoiceEngine.finalizeInvoice(compiledRB);
+      // Edit payment 2: change amount from ₹10,000 to ₹15,000
+      window.dpvStore.recordPayment({
+        id: "pay_rb_2",
+        invoiceId: savedRBInv.id,
+        amount: 15000,
+        type: "Second Payment",
+        method: "UPI",
+        date: "2026-10-15"
+      });
+      const updatedInv = window.dpvStore.getInvoiceById(savedRBInv.id);
+      assert("After edit, Installment 2 amount is ₹15,000", updatedInv.payments.find(p => p.id === "pay_rb_2").amount === 15000);
+      assert("After edit, Installment 2 balanceAfter is ₹35,000 (60k - 25k)", updatedInv.payments.find(p => p.id === "pay_rb_2").balanceAfter === 35000);
+      assert("Total paid updated dynamically to ₹65,000", updatedInv.financials.totalPaid === 65000);
+
+      // 20. Payment Deletion in Store Test
+      // Delete payment 3 (₹20,000)
+      window.dpvStore.deletePayment("pay_rb_3");
+      const afterDelInv = window.dpvStore.getInvoiceById(savedRBInv.id);
+      assert("Payment 3 removed from invoice payments", !afterDelInv.payments.some(p => p.id === "pay_rb_3"));
+      assert("Total paid recalculated to ₹45,000 (10k + 15k + 20k)", afterDelInv.financials.totalPaid === 45000);
+      assert("Balance due recalculated to ₹15,000 (60k - 45k)", afterDelInv.financials.balanceDue === 15000);
+      assert("Payment status returns to 'PARTIALLY PAID'", afterDelInv.paymentStatus === 'PARTIALLY PAID');
+
+      // 21. Terms Selection Checkbox Isolation Test (Unchecked terms strictly removed)
+      const noTermsInv = window.dpvInvoiceEngine.compileInvoice({
+        ...runBalInv,
+        selectedTerms: []
+      });
+      assert("Unchecking all terms results in 0 terms on compiled invoice (no fallback dump)", Array.isArray(noTermsInv.terms) && noTermsInv.terms.length === 0);
+
+      const twoTermsInv = window.dpvInvoiceEngine.compileInvoice({
+        ...runBalInv,
+        selectedTerms: ["Custom term 1", "Custom term 2"]
+      });
+      assert("Selecting 2 terms results in exactly 2 terms on compiled invoice", twoTermsInv.terms.length === 2 && twoTermsInv.terms[0] === "Custom term 1");
+
+      // 22. Customer Search by Invoice Number Test
+      const searchCust = window.dpvStore.saveCustomer({
+        name: "Invoice Search Client",
+        phone: "9988776655"
+      });
+      const searchInv = window.dpvInvoiceEngine.finalizeInvoice(window.dpvInvoiceEngine.buildInvoiceObject({
+        invoiceNumber: "DPV/2026/SRCH99",
+        customer: { id: searchCust.id, name: searchCust.name, phone: searchCust.phone },
+        event: { type: "Engagement" },
+        items: [{ name: "Engagement Shoot", rate: 20000, qty: 1 }]
+      }));
+      const allCustomers = window.dpvStore.getCustomers();
+      const allInvoices = window.dpvStore.getInvoices();
+      const q = "SRCH99".toLowerCase();
+      const matchedCustomers = allCustomers.filter(c => {
+        const matchesDirect = c.name.toLowerCase().includes(q) || (c.phone && c.phone.includes(q));
+        if (matchesDirect) return true;
+        const cInvs = allInvoices.filter(inv => inv.customer?.phone === c.phone || inv.customer?.name === c.name || inv.customerId === c.id);
+        return cInvs.some(inv => (inv.invoiceNumber && inv.invoiceNumber.toLowerCase().includes(q)));
+      });
+      assert("Customer search by invoice number 'SRCH99' finds 'Invoice Search Client'", matchedCustomers.length === 1 && matchedCustomers[0].name === "Invoice Search Client");
+
+      // Summary
+      const summaryDiv = document.createElement('div');
+      summaryDiv.className = 'summary';
+      summaryDiv.style.background = failed === 0 ? '#064e3b' : '#7f1d1d';
+      summaryDiv.innerHTML = `<h3>TEST RESULTS: ${passed} PASSED, ${failed} FAILED</h3>`;
+      output.appendChild(summaryDiv);
+      } catch (err) {
+        assert("UNCAUGHT ERROR: " + err.message + " | " + err.stack, false);
+        const summaryDiv = document.createElement('div');
+        summaryDiv.className = 'summary';
+        summaryDiv.style.background = '#7f1d1d';
+        summaryDiv.innerHTML = `<h3>TEST RESULTS: ${passed} PASSED, ${failed} FAILED (ABORTED)</h3>`;
+        output.appendChild(summaryDiv);
+      }
+    }
+
+    runAllTests();
+  </script>
+</body>
+</html>
