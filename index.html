@@ -1278,6 +1278,18 @@
                 <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
                   <button type="button" class="btn btn-primary" onclick="window.dpvFirebaseSync.uploadAllDataToCloud()"><i data-lucide="cloud-upload"></i> Sync All Current Bills &amp; Data to Cloud Now</button>
                 </div>
+
+                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-color);">
+                <h4 style="font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 8px;">7. App Version &amp; Automatic Updates</h4>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+                  Installed PWA Version: <strong style="color: var(--accent);" id="app-pwa-version-display">v1.1.0 (Live Cloud Engine)</strong>. 
+                  The app automatically detects and downloads new updates in the background. Tap below to force an immediate check.
+                </p>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                  <button type="button" class="btn btn-outline" onclick="window.dpvApp && window.dpvApp.checkForAppUpdates(true)">
+                    <i data-lucide="refresh-cw"></i> Check &amp; Force Update App Now
+                  </button>
+                </div>
               </form>
             </div>
           </div>
@@ -1549,13 +1561,53 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/app.js"></script>
 
-  <!-- Service Worker Registration for PWA -->
+  <!-- Service Worker Registration for PWA with Auto-Update -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('[PWA] Service Worker registered with scope:', reg.scope))
+          .then((reg) => {
+            console.log('[PWA] Service Worker registered with scope:', reg.scope);
+            
+            // Check for service worker updates immediately on page load
+            reg.update().catch(() => {});
+
+            // Also check for updates every 10 minutes and whenever the app comes into foreground
+            setInterval(() => { reg.update().catch(() => {}); }, 10 * 60 * 1000);
+            document.addEventListener('visibilitychange', () => {
+              if (document.visibilityState === 'visible') {
+                reg.update().catch(() => {});
+              }
+            });
+
+            // When a new worker is found
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('[PWA] New version ready! Activating...');
+                  }
+                });
+              }
+            });
+          })
           .catch(err => console.warn('[PWA] Service Worker registration failed:', err));
+
+        // When new service worker activates, auto-reload seamlessly
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            console.log('[PWA] Controller changed. Auto-refreshing app to apply new update...');
+            if (window.dpvApp && typeof window.dpvApp.showToast === 'function') {
+              window.dpvApp.showToast('🔄 App automatically updated to latest version! Reloading...', 'info');
+              setTimeout(() => { window.location.reload(); }, 900);
+            } else {
+              window.location.reload();
+            }
+          }
+        });
       });
     }
   </script>

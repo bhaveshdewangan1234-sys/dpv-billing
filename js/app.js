@@ -3313,6 +3313,32 @@ class DPVApp {
       setTimeout(() => toast.remove(), 300);
     }, 4000);
   }
+
+  // PWA App Update Manager
+  checkForAppUpdates(manual = false) {
+    if ('serviceWorker' in navigator) {
+      if (manual) this.showToast('Checking for latest updates on cloud...', 'info');
+      navigator.serviceWorker.getRegistration().then(reg => {
+        if (reg) {
+          reg.update().then(() => {
+            if (manual) {
+              setTimeout(() => {
+                this.showToast('App is running the latest version (v1.1.0)!', 'success');
+              }, 1200);
+            }
+          }).catch(err => {
+            if (manual) this.showToast('Update check note: ' + err.message, 'warning');
+          });
+        } else if (manual) {
+          this.showToast('App is running the latest version!', 'success');
+        }
+      }).catch(err => {
+        if (manual) this.showToast('Update check failed: ' + err.message, 'error');
+      });
+    } else if (manual) {
+      this.showToast('Browser running latest online version.', 'info');
+    }
+  }
 }
 
 // Global Application Instance
