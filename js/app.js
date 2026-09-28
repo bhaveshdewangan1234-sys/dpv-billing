@@ -392,9 +392,14 @@ class DPVApp {
         </td>
         <td><span class="status-pill status-${inv.paymentStatus.toLowerCase().replace(/\s+/g, '-')}">${inv.paymentStatus}</span></td>
         <td>
-          <button class="btn btn-outline btn-sm" onclick="window.dpvApp.openInvoicePreview('${inv.id}')" title="Preview A4">
-            <i data-lucide="eye"></i>
-          </button>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn btn-outline btn-sm" onclick="window.dpvApp.openInvoicePreview('${inv.id}')" title="Preview A4">
+              <i data-lucide="eye"></i>
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="window.dpvApp.deleteInvoice('${inv.id}')" title="Delete" style="color: var(--danger); border-color: #fecaca;">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </div>
         </td>
       </tr>
     `).join('');
@@ -2220,12 +2225,15 @@ class DPVApp {
   // Download PDF
   async handleDownloadPdf() {
     const sheet = document.getElementById('invoice-sheet');
+    const container = document.querySelector('.invoice-page-container');
     if (!sheet || !this.activeInvoice) return;
 
     this.showToast("Generating high-definition A4 PDF...", "info");
     const prevTransform = sheet.style.transform;
     const prevOrigin = sheet.style.transformOrigin;
     const prevMargin = sheet.style.marginBottom;
+    const wasFit = container && container.classList.contains('fit-screen');
+    if (wasFit) container.classList.remove('fit-screen');
     sheet.style.transform = 'none';
     sheet.style.transformOrigin = '';
     sheet.style.marginBottom = '';
@@ -2236,6 +2244,7 @@ class DPVApp {
     } catch (e) {
       this.showToast("PDF generation failed, opening print dialog...", "error");
     } finally {
+      if (wasFit && container) container.classList.add('fit-screen');
       sheet.style.transform = prevTransform;
       sheet.style.transformOrigin = prevOrigin;
       sheet.style.marginBottom = prevMargin;
@@ -2244,18 +2253,43 @@ class DPVApp {
 
   // Print
   handlePrint() {
-    window.dpvPdfGenerator.printInvoice();
+    const sheet = document.getElementById('invoice-sheet');
+    const container = document.querySelector('.invoice-page-container');
+    const prevTransform = sheet ? sheet.style.transform : '';
+    const prevOrigin = sheet ? sheet.style.transformOrigin : '';
+    const prevMargin = sheet ? sheet.style.marginBottom : '';
+    const wasFit = container && container.classList.contains('fit-screen');
+    if (wasFit) container.classList.remove('fit-screen');
+    if (sheet) {
+      sheet.style.transform = 'none';
+      sheet.style.transformOrigin = '';
+      sheet.style.marginBottom = '';
+    }
+
+    window.print();
+
+    setTimeout(() => {
+      if (wasFit && container) container.classList.add('fit-screen');
+      if (sheet) {
+        sheet.style.transform = prevTransform;
+        sheet.style.transformOrigin = prevOrigin;
+        sheet.style.marginBottom = prevMargin;
+      }
+    }, 500);
   }
 
   // WhatsApp Share
   async handleWhatsAppShare() {
     if (!this.activeInvoice) return;
     const sheet = document.getElementById('invoice-sheet');
+    const container = document.querySelector('.invoice-page-container');
     this.showToast("Opening WhatsApp share...", "info");
 
     const prevTransform = sheet ? sheet.style.transform : '';
     const prevOrigin = sheet ? sheet.style.transformOrigin : '';
     const prevMargin = sheet ? sheet.style.marginBottom : '';
+    const wasFit = container && container.classList.contains('fit-screen');
+    if (wasFit) container.classList.remove('fit-screen');
     if (sheet) {
       sheet.style.transform = 'none';
       sheet.style.transformOrigin = '';
@@ -2272,6 +2306,7 @@ class DPVApp {
       console.warn("Share fallback:", e);
       window.dpvPdfGenerator.shareInvoice(this.activeInvoice, null);
     } finally {
+      if (wasFit && container) container.classList.add('fit-screen');
       if (sheet) {
         sheet.style.transform = prevTransform;
         sheet.style.transformOrigin = prevOrigin;
@@ -2411,6 +2446,18 @@ class DPVApp {
     if (confirm(`Are you sure you want to permanently delete invoice ${inv.invoiceNumber}? This cannot be undone.`)) {
       window.dpvStore.deleteInvoice(id);
       this.showToast(`Invoice ${inv.invoiceNumber} deleted.`, 'info');
+      this.refreshAllData();
+    }
+  }
+
+  // Delete Active Invoice from Preview
+  deleteActiveInvoice() {
+    if (!this.activeInvoice) return;
+    const inv = this.activeInvoice;
+    if (confirm(`Are you sure you want to permanently delete invoice ${inv.invoiceNumber}? This cannot be undone.`)) {
+      window.dpvStore.deleteInvoice(inv.id);
+      this.showToast(`Invoice ${inv.invoiceNumber} deleted permanently.`, 'info');
+      this.backFromPreview();
       this.refreshAllData();
     }
   }

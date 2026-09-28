@@ -44,11 +44,13 @@ class DPVFirebaseSync {
 
       this.db = firebase.firestore();
 
-      // Enable offline persistence in Firestore so data stays cached locally
+      // Enable offline persistence in background (NON-BLOCKING) so init never hangs
       try {
-        await this.db.enablePersistence({ synchronizeTabs: true });
+        this.db.enablePersistence().catch((pErr) => {
+          console.warn("[DPVFirebaseSync] Offline persistence notice (non-fatal):", pErr.code || pErr.message);
+        });
       } catch (pErr) {
-        // Ignored if tab already initialized or unsupported
+        // Ignored
       }
 
       this.isConnected = true;
@@ -58,7 +60,7 @@ class DPVFirebaseSync {
       // Start listening to real-time changes from other devices
       this.setupRealtimeListeners();
 
-      // Check if cloud has records, if totally empty and we have local demo/user data, do initial push
+      // Check if cloud has records; if totally empty and we have local data, do initial push
       this.checkAndPerformInitialPush();
 
       return true;
@@ -139,6 +141,19 @@ class DPVFirebaseSync {
     } catch (e) {
       console.warn("[DPVFirebaseSync] Payments listener setup:", e);
     }
+
+    // 4. STUDIO SETTINGS REAL-TIME LISTENER (Phone, Rates, UPI, Tagline across all devices)
+    try {
+      const unsubSettings = this.db.collection('dpv_settings').doc('studio_settings').onSnapshot((doc) => {
+        if (!window.dpvStore || !doc.exists) return;
+        window.dpvStore.mergeRemoteSettings(doc.data());
+      }, (err) => {
+        console.warn("[DPVFirebaseSync] Settings listener note:", err.message);
+      });
+      this.unsubscribeListeners.push(unsubSettings);
+    } catch (e) {
+      console.warn("[DPVFirebaseSync] Settings listener setup:", e);
+    }
   }
 
   cleanupListeners() {
@@ -152,7 +167,8 @@ class DPVFirebaseSync {
    * Push an individual invoice to Firestore
    */
   async syncInvoice(invoice) {
-    if (!this.isConnected || !this.db || !invoice || !invoice.id) return false;
+    if (!this.db && typeof firebase !== 'undefined') await this.init();
+    if (!this.db || !invoice || !invoice.id) return false;
     try {
       await this.db.collection('dpv_invoices').doc(invoice.id).set(invoice, { merge: true });
       return true;
@@ -166,7 +182,8 @@ class DPVFirebaseSync {
    * Delete an invoice from Firestore
    */
   async deleteInvoice(invoiceId) {
-    if (!this.isConnected || !this.db || !invoiceId) return false;
+    if (!this.db && typeof firebase !== 'undefined') await this.init();
+    if (!this.db || !invoiceId) return false;
     try {
       await this.db.collection('dpv_invoices').doc(invoiceId).delete();
       return true;
@@ -180,7 +197,8 @@ class DPVFirebaseSync {
    * Push customer record to Firestore
    */
   async syncCustomer(customer) {
-    if (!this.isConnected || !this.db || !customer || !customer.id) return false;
+    if (!this.db && typeof firebase !== 'undefined') await this.init();
+    if (!this.db || !customer || !customer.id) return false;
     try {
       await this.db.collection('dpv_customers').doc(customer.id).set(customer, { merge: true });
       return true;
@@ -194,7 +212,8 @@ class DPVFirebaseSync {
    * Delete customer record from Firestore
    */
   async deleteCustomer(customerId) {
-    if (!this.isConnected || !this.db || !customerId) return false;
+    if (!this.db && typeof firebase !== 'undefined') await this.init();
+    if (!this.db || !customerId) return false;
     try {
       await this.db.collection('dpv_customers').doc(customerId).delete();
       return true;
@@ -208,7 +227,8 @@ class DPVFirebaseSync {
    * Push payment record to Firestore
    */
   async syncPayment(payment) {
-    if (!this.isConnected || !this.db || !payment || !payment.id) return false;
+    if (!this.db && typeof firebase !== 'undefined') await this.init();
+    if (!this.db || !payment || !payment.id) return false;
     try {
       await this.db.collection('dpv_payments').doc(payment.id).set(payment, { merge: true });
       return true;
@@ -222,12 +242,28 @@ class DPVFirebaseSync {
    * Delete payment record from Firestore
    */
   async deletePayment(paymentId) {
-    if (!this.isConnected || !this.db || !paymentId) return false;
+    if (!this.db && typeof firebase !== 'undefined') await this.init();
+    if (!this.db || !paymentId) return false;
     try {
       await this.db.collection('dpv_payments').doc(paymentId).delete();
       return true;
     } catch (e) {
       console.error("[DPVFirebaseSync] Error deleting payment:", e);
+      return false;
+    }
+  }
+
+  /**
+   * Push studio settings record to Firestore
+   */
+  async syncSettings(settings) {
+    if (!this.db && typeof firebase !== 'undefined') await this.init();
+    if (!this.db || !settings) return false;
+    try {
+      await this.db.collection('dpv_settings').doc('studio_settings').set(settings, { merge: true });
+      return true;
+    } catch (e) {
+      console.error("[DPVFirebaseSync] Error syncing settings:", e);
       return false;
     }
   }
@@ -250,11 +286,12 @@ class DPVFirebaseSync {
   }
 
   /**
-   * 1-Click Upload all local invoices, customers, and payments to Cloud
+   * 1-Click Upload all local invoices, customers, payments, and settings to Cloud
    */
   async uploadAllDataToCloud(silent = false) {
+    if (!this.db && typeof firebase !== 'undefined') await this.init();
     if (!this.isConnected || !this.db || !window.dpvStore) {
-      if (!silent) alert("Firebase is not connected yet. Please ensure Firestore Database is created in your Firebase Console.");
+      if (!silent) alert("Firebase is not connected yet. Please ensure you have internet access and Firestore Database is enabled.");
       return false;
     }
 
@@ -262,6 +299,7 @@ class DPVFirebaseSync {
       const invoices = window.dpvStore.getInvoices();
       const customers = window.dpvStore.getCustomers();
       const payments = window.dpvStore.getPayments();
+      const settings = window.dpvStore.getSettings();
 
       const batch = this.db.batch();
 
@@ -277,10 +315,14 @@ class DPVFirebaseSync {
         batch.set(this.db.collection('dpv_payments').doc(pay.id), pay, { merge: true });
       });
 
+      if (settings && Object.keys(settings).length > 0) {
+        batch.set(this.db.collection('dpv_settings').doc('studio_settings'), settings, { merge: true });
+      }
+
       await batch.commit();
 
       if (!silent && window.dpvApp && typeof window.dpvApp.showToast === 'function') {
-        window.dpvApp.showToast("All studio bills, customers, and payments synced to Cloud!", "success");
+        window.dpvApp.showToast("All studio bills, customers, settings & payments synced to Cloud!", "success");
       }
       console.log("[DPVFirebaseSync] Batch sync to cloud succeeded.");
       return true;

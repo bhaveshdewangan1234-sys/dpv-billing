@@ -27,7 +27,9 @@ class DPVPDFGenerator {
         useCORS: true,
         letterRendering: true,
         scrollY: 0,
-        scrollX: 0
+        scrollX: 0,
+        windowWidth: 794, // Lock capture width to exact A4 pixel width (prevents mobile squishing)
+        backgroundColor: '#ffffff'
       },
       jsPDF: {
         unit: 'mm',
@@ -35,7 +37,8 @@ class DPVPDFGenerator {
         orientation: 'portrait'
       },
       pagebreak: {
-        mode: ['avoid-all', 'css', 'legacy'],
+        mode: ['css', 'legacy'],
+        before: ['.html2pdf__page-break', '.inv-table-wrapper'],
         avoid: ['.avoid-break', '.inv-terms-box', '.inv-bottom-signatures-row', '.inv-payment-totals-row', '.inv-main-table tr', '.inv-pay-history-item', '.shoot-summary-card', '.inv-deliverables-card']
       }
     };

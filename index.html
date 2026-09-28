@@ -633,6 +633,7 @@
               <button class="btn btn-primary btn-sm" id="preview-download-pdf-btn"><i data-lucide="download"></i> Download PDF</button>
               <button class="btn btn-accent btn-sm" id="preview-finalize-btn"><i data-lucide="check-check"></i> Finalize &amp; Lock</button>
               <button class="btn btn-outline btn-sm" id="preview-edit-btn"><i data-lucide="edit-3"></i> Edit</button>
+              <button class="btn btn-outline btn-sm" id="preview-delete-btn" style="color: var(--danger); border-color: #fecaca;" onclick="window.dpvApp.deleteActiveInvoice()"><i data-lucide="trash-2"></i> Delete</button>
             </div>
           </div>
 
@@ -672,7 +673,8 @@
                   </defs>
 
                   <!-- Right Section Base & Bokeh -->
-                  <rect x="0" y="0" width="1000" height="215" fill="url(#lightBgGrad)" />
+                  <rect x="0" y="0" width="1000" height="215" fill="#ffffff" />
+                  <rect x="0" y="0" width="1000" height="215" fill="url(#lightBgGrad)" opacity="0.9" />
                   <circle cx="820" cy="40" r="45" fill="url(#bokehGlow1)" />
                   <circle cx="930" cy="75" r="55" fill="url(#bokehGlow2)" />
                   <circle cx="750" cy="65" r="28" fill="url(#bokehGlow1)" />
@@ -683,8 +685,8 @@
                   <polygon points="0,0 455,0 388,215 0,215" fill="#070707" />
 
                   <!-- Dual Beveled Gold Dividing Ribbons -->
-                  <polygon points="455,0 463,0 396,215 388,215" fill="url(#goldRibbonGrad)" />
-                  <polygon points="466,0 469,0 402,215 399,215" fill="url(#goldThinGrad)" opacity="0.9" />
+                  <polygon points="455,0 463,0 396,215 388,215" fill="#d4af37" />
+                  <polygon points="466,0 469,0 402,215 399,215" fill="#ca8a04" opacity="0.9" />
 
                   <!-- Top-Left Corner Geometric Accent -->
                   <polygon points="0,0 50,0 0,50" fill="url(#goldRibbonGrad)" />
@@ -837,7 +839,10 @@
                   </div>
                 </div>
 
-                <!-- Items / Services Table with 10 Rows & Translucent Watermark -->
+                <!-- EXPLICIT A4 2-PAGE SPLIT BREAK (Guaranteed Page 1 / Page 2 Natural Separation) -->
+                <div class="html2pdf__page-break" style="page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0;"></div>
+
+                <!-- Items / Services Table with 10 Rows & Translucent Watermark (Begins Page 2) -->
                 <div class="inv-table-wrapper">
                   <table class="inv-main-table">
                     <thead>

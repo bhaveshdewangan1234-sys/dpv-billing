@@ -487,7 +487,8 @@ class DPVStore {
           createdAt: new Date().toISOString()
         }
       ],
-      auditLogs: []
+      auditLogs: [],
+      deletedInvoiceIds: []
     };
   }
 
@@ -497,14 +498,17 @@ class DPVStore {
       const stored = localStorage.getItem(this.dbName);
       if (stored) {
         this.memoryCache = JSON.parse(stored);
+        if (!Array.isArray(this.memoryCache.deletedInvoiceIds)) {
+          this.memoryCache.deletedInvoiceIds = [];
+        }
         // Ensure all required default collections exist
         const defaults = this.getDefaultState();
         for (const key of Object.keys(defaults)) {
-          if (!this.memoryCache[key]) {
+          if (this.memoryCache[key] === undefined) {
             this.memoryCache[key] = defaults[key];
           }
         }
-        if (!this.memoryCache.invoices || this.memoryCache.invoices.length === 0) {
+        if (!this.memoryCache.invoices) {
           this.memoryCache.invoices = defaults.invoices;
           this.memoryCache.payments = defaults.payments;
         }
@@ -532,10 +536,6 @@ class DPVStore {
         }
         // Ensure each invoice has documentType
         if (Array.isArray(this.memoryCache.invoices)) {
-          if (!this.memoryCache.invoices.some(i => i.id === 'quot_demo_1')) {
-            const demoQuote = defaults.invoices.find(i => i.id === 'quot_demo_1');
-            if (demoQuote) this.memoryCache.invoices.push(demoQuote);
-          }
           let storeNeedsSave = false;
           this.memoryCache.invoices.forEach(inv => {
             if (!inv.documentType) {
@@ -673,12 +673,28 @@ class DPVStore {
     this.memoryCache.settings = { ...this.memoryCache.settings, ...newSettings };
     this.persist();
     this.logAudit('SETTINGS_UPDATED', 'Updated studio and business settings');
+    if (window.dpvFirebaseSync) {
+      window.dpvFirebaseSync.syncSettings(this.memoryCache.settings);
+    }
     return this.memoryCache.settings;
+  }
+
+  mergeRemoteSettings(remoteSettings) {
+    if (!remoteSettings || typeof remoteSettings !== 'object') return;
+    this.memoryCache.settings = { ...this.memoryCache.settings, ...remoteSettings };
+    this.persist();
+    this.emit('settings_updated', this.memoryCache.settings);
   }
 
   // Remote Cloud Sync Methods (Multi-Device Live Sync)
   mergeRemoteInvoice(remoteInv) {
     if (!remoteInv || !remoteInv.id) return false;
+    if (Array.isArray(this.memoryCache.deletedInvoiceIds) && this.memoryCache.deletedInvoiceIds.includes(remoteInv.id)) {
+      if (window.dpvFirebaseSync) {
+        window.dpvFirebaseSync.deleteInvoice(remoteInv.id);
+      }
+      return false;
+    }
     const list = this.memoryCache.invoices || [];
     const index = list.findIndex(i => i.id === remoteInv.id);
     let isNew = false;
@@ -805,7 +821,7 @@ class DPVStore {
 
     this.persist();
     this.emit('invoices_updated', list);
-    if (window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+    if (window.dpvFirebaseSync) {
       window.dpvFirebaseSync.syncInvoice(invoiceData);
     }
     return invoiceData;
@@ -819,10 +835,16 @@ class DPVStore {
     this.memoryCache.invoices = list.filter(i => i.id !== id);
     // Also remove associated payments
     this.memoryCache.payments = (this.memoryCache.payments || []).filter(p => p.invoiceId !== id);
+    if (!Array.isArray(this.memoryCache.deletedInvoiceIds)) {
+      this.memoryCache.deletedInvoiceIds = [];
+    }
+    if (!this.memoryCache.deletedInvoiceIds.includes(id)) {
+      this.memoryCache.deletedInvoiceIds.push(id);
+    }
     this.persist();
     this.logAudit('INVOICE_DELETED', `Deleted invoice ${inv.invoiceNumber}`);
     this.emit('invoices_updated', this.memoryCache.invoices);
-    if (window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+    if (window.dpvFirebaseSync) {
       window.dpvFirebaseSync.deleteInvoice(id);
     }
     return true;
@@ -958,7 +980,7 @@ class DPVStore {
     this.memoryCache.customers = list;
     this.persist();
     this.emit('customers_updated', list);
-    if (window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+    if (window.dpvFirebaseSync) {
       window.dpvFirebaseSync.syncCustomer(customerData);
     }
     return customerData;
@@ -969,7 +991,7 @@ class DPVStore {
     this.memoryCache.customers = list.filter(c => c.id !== id);
     this.persist();
     this.emit('customers_updated', this.memoryCache.customers);
-    if (window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+    if (window.dpvFirebaseSync) {
       window.dpvFirebaseSync.deleteCustomer(id);
     }
     return true;
@@ -1230,7 +1252,7 @@ class DPVStore {
 
     this.persist();
     this.emit('payments_updated', this.memoryCache.payments);
-    if (window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+    if (window.dpvFirebaseSync) {
       window.dpvFirebaseSync.syncPayment(payment);
     }
     return payment;
@@ -1279,7 +1301,7 @@ class DPVStore {
 
     this.persist();
     this.emit('payments_updated', this.memoryCache.payments);
-    if (window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+    if (window.dpvFirebaseSync) {
       window.dpvFirebaseSync.deletePayment(paymentId);
     }
     return true;

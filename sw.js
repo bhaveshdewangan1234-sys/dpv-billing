@@ -1,9 +1,9 @@
 /**
  * Dewangan Photo & Videography – Invoice Management System
- * Service Worker for PWA Offline Caching
+ * Service Worker for PWA Offline Caching & Instant Multi-Device Sync
  */
 
-const CACHE_NAME = 'dpv-invoice-v1.0.0';
+const CACHE_NAME = 'dpv-invoice-v1.1.0';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -59,22 +59,27 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  
-  // For navigation requests, network first with cache fallback
-  if (event.request.mode === 'navigate') {
+
+  // Network-First for HTML navigation and JS/CSS scripts so code updates instantly
+  if (event.request.mode === 'navigate' || event.request.destination === 'script' || event.request.destination === 'style') {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match('./index.html');
+      fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const copy = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
+        return networkResponse;
+      }).catch(() => {
+        return caches.match(event.request).then((cached) => cached || (event.request.mode === 'navigate' ? caches.match('./index.html') : null));
       })
     );
     return;
   }
 
-  // Cache first with network update for static assets
+  // Cache-first for images, icons, and static assets
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Fetch in background to keep cache fresh
         fetch(event.request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
