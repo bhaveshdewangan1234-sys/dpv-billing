@@ -1603,12 +1603,20 @@
           // 7. Test Quotation Mode & Convert Button
           window.dpvApp.startNewQuotation();
           log("Quotation mode activated", window.dpvApp.currentDocumentType === 'quotation');
-          window.dpvApp.openInvoicePreview('quot_demo_1');
+          const auditQuote = window.dpvInvoiceEngine.buildInvoiceObject({
+            documentType: 'quotation',
+            invoiceNumber: window.dpvStore.getNextQuotationNumber(),
+            customer: { name: 'Audit Quotation Customer', phone: '9301614549' },
+            items: [{ name: 'Test Shoot', rate: 10000, qty: 1, discount: 0 }]
+          });
+          window.dpvStore.saveInvoice(auditQuote);
+          window.dpvApp.openInvoicePreview(auditQuote.id);
           log("Quotation preview loaded", window.dpvApp.activeInvoice && window.dpvApp.activeInvoice.documentType === 'quotation');
           const quotBox = document.getElementById('inv-quotation-box-container');
           log("Quotation notice box displayed", quotBox && quotBox.style.display !== 'none');
           const convertBtn = document.getElementById('preview-convert-invoice-btn');
           log("Quotation convert button visible", convertBtn && convertBtn.style.display !== 'none');
+          window.dpvStore.deleteInvoice(auditQuote.id);
 
           // 8. Test Calendar List View
           window.dpvApp.navigateTo('view-calendar');
@@ -1617,10 +1625,12 @@
           log("Calendar schedule list view displayed", calListContainer && calListContainer.style.display !== 'none');
 
           // 9. Test Customer Profile Modal
-          window.dpvApp.openCustomerProfile('cust_demo_1');
+          const auditCust = window.dpvStore.saveCustomer({ name: 'Audit Customer', phone: '9301614549' });
+          window.dpvApp.openCustomerProfile(auditCust.id);
           const custModal = document.getElementById('modal-customer-profile');
           log("Customer profile modal opens with history", custModal && custModal.classList.contains('open'));
           window.dpvApp.closeModals();
+          window.dpvStore.deleteCustomer(auditCust.id);
 
           log("AUDIT_TEST_ALL_PASSED_SUCCESSFULLY");
 

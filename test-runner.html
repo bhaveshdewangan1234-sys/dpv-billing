@@ -396,7 +396,81 @@
       });
       assert("Customer search by invoice number 'SRCH99' finds 'Invoice Search Client'", matchedCustomers.length === 1 && matchedCustomers[0].name === "Invoice Search Client");
 
-      // Summary
+      // 23. Zero State & No Auto-Resurrection of Demo Bills (Primary Rule)
+      assert("Old demo invoice inv_demo_1 is permanently tombstoned", window.dpvStore.isInvoiceDeleted('inv_demo_1'));
+      assert("Old demo quotation quot_demo_1 is permanently tombstoned", window.dpvStore.isInvoiceDeleted('quot_demo_1'));
+      const mergeAttempt1 = window.dpvStore.mergeRemoteInvoice({ id: 'inv_demo_1', invoiceNumber: 'DPV/2026/0001', financials: { grandTotal: 50000 } });
+      assert("Attempt to merge tombstoned demo invoice is rejected", mergeAttempt1 === false && !window.dpvStore.getInvoiceById('inv_demo_1'));
+
+      // 24. Delete Flow & Permanent Tombstone Persistence
+      const freshBill = window.dpvInvoiceEngine.buildInvoiceObject({
+        id: "inv_persist_test_" + Date.now(),
+        invoiceNumber: "DPV/2026/PERSIST1",
+        customer: { name: "Persist Test Customer", phone: "9301614549" },
+        items: [{ name: "Photography Package", rate: 30000, qty: 1, discount: 0 }],
+        payments: [{ id: "pay_persist_1", type: "First Payment (Advance)", amount: 10000, method: "UPI" }]
+      });
+      window.dpvStore.saveInvoice(freshBill);
+      assert("Fresh bill successfully saved in store", window.dpvStore.getInvoiceById(freshBill.id) !== null);
+      assert("Associated payment saved in store", window.dpvStore.getPayments().some(p => p.id === "pay_persist_1"));
+
+      // Execute Delete
+      const deleteResult = window.dpvStore.deleteInvoice(freshBill.id);
+      assert("deleteInvoice returned true", deleteResult === true);
+      assert("Bill is deleted from memoryCache.invoices", window.dpvStore.getInvoiceById(freshBill.id) === null);
+      assert("Bill ID is recorded in deletedInvoiceIds tombstone list", window.dpvStore.isInvoiceDeleted(freshBill.id));
+      assert("Associated payment is purged from payments collection", !window.dpvStore.getPayments().some(p => p.id === "pay_persist_1"));
+
+      // 25. Cloud Snapshot Synchronization (Database State Wins)
+      // When cloud snapshot has 0 docs, local non-draft bills are cleared and not resurrected
+      window.dpvStore.syncFromCloud([]);
+      assert("syncFromCloud with empty array clears local invoices to 0 (Zero State)", window.dpvStore.getInvoices().length === 0);
+
+      // When cloud snapshot sends a doc that was deleted, syncFromCloud filters it out
+      window.dpvStore.syncFromCloud([
+        { id: freshBill.id, invoiceNumber: freshBill.invoiceNumber, financials: { grandTotal: 30000 } }
+      ]);
+      assert("syncFromCloud rejects deleted invoice even if present in cloud payload", window.dpvStore.getInvoiceById(freshBill.id) === null);
+
+      // 26. Remote Tombstone Propagation (Multi-device deletion sync)
+      const remoteSyncBill = window.dpvInvoiceEngine.buildInvoiceObject({
+        id: "inv_remote_del_" + Date.now(),
+        invoiceNumber: "DPV/2026/REMOTE1",
+        customer: { name: "Remote Test Customer", phone: "9301614549" },
+        items: [{ name: "Videography Package", rate: 25000, qty: 1 }]
+      });
+      window.dpvStore.saveInvoice(remoteSyncBill);
+      assert("Remote sync candidate bill exists before tombstone", window.dpvStore.getInvoiceById(remoteSyncBill.id) !== null);
+      
+      // Simulate remote device deleting this bill and broadcasting tombstone
+      window.dpvStore.mergeRemoteTombstones([remoteSyncBill.id]);
+      assert("mergeRemoteTombstones immediately removes bill from store", window.dpvStore.getInvoiceById(remoteSyncBill.id) === null);
+      assert("Bill ID is recorded in local tombstones after mergeRemoteTombstones", window.dpvStore.isInvoiceDeleted(remoteSyncBill.id));
+
+      // 27. Final Bill & Preview Auto-Save Field Preservation
+      const fullBill = window.dpvInvoiceEngine.buildInvoiceObject({
+        invoiceNumber: "DPV/2026/FULL99",
+        customer: { name: "Full Spec Client", relationName: "S/o Ramesh", phone: "9301614549", altPhone: "9301614549", address: "Jamul, Bhilai" },
+        event: { type: "Wedding Shoot", date: "2026-12-15", venue: "Hotel Grand" },
+        shootingDates: [{ id: "sd_1", eventName: "Ring Ceremony", date: "2026-12-14", venue: "Resort", timings: "5 PM" }],
+        albums: [{ id: "alb_1", size: "12x36", sheets: 40, paperQuality: "Velvet", coverType: "Leather" }],
+        deliverables: [{ id: "del_1", name: "Pen Drive 64GB", qty: 1 }],
+        items: [{ id: "it_1", name: "Complete Wedding Photography", rate: 50000, qty: 1, discount: 5000 }],
+        payments: [{ id: "pay_full_1", type: "First Payment (Advance)", amount: 20000, method: "UPI", date: "2026-11-01" }],
+        selectedTerms: [{ id: "t_1", order: 1, title: "Booking", text: "बुकिंग तय एडवांस राशि मिलने पर ही कन्फर्म होगी।" }]
+      });
+      const savedFullBill = window.dpvStore.saveInvoice(fullBill);
+      assert("Full bill saved with ID", savedFullBill && savedFullBill.id);
+      const retrievedBill = window.dpvStore.getInvoiceById(savedFullBill.id);
+      assert("Customer info preserved in full", retrievedBill.customer.name === "Full Spec Client" && retrievedBill.customer.phone === "9301614549");
+      assert("Event schedule preserved in full", retrievedBill.shootingDates.length === 1 && retrievedBill.shootingDates[0].eventName === "Ring Ceremony");
+      assert("Album specifications preserved in full", retrievedBill.albums.length === 1 && retrievedBill.albums[0].size === "12x36");
+      assert("Deliverables preserved in full", retrievedBill.deliverables.length === 1 && retrievedBill.deliverables[0].name === "Pen Drive 64GB");
+      assert("Payments preserved in full", retrievedBill.payments.length === 1 && retrievedBill.payments[0].amount === 20000);
+      assert("Terms preserved in full", (retrievedBill.termsSnapshot || retrievedBill.terms).length === 1);
+      // Clean up test bill
+      window.dpvStore.deleteInvoice(savedFullBill.id);
+      assert("Cleaned up full test bill", window.dpvStore.getInvoiceById(savedFullBill.id) === null);
       const summaryDiv = document.createElement('div');
       summaryDiv.className = 'summary';
       summaryDiv.style.background = failed === 0 ? '#064e3b' : '#7f1d1d';
