@@ -640,129 +640,9 @@
           <!-- A4 Sheet Simulation Canvas -->
           <div class="invoice-page-container">
             <div id="invoice-sheet" class="invoice-a4-sheet">
-              <!-- 1. Top Header Banner (Vector Background + Crisp Live HTML Typography) -->
+              <!-- 1. Top Header Banner (Official Studio Luxury Composite Banner) -->
               <div class="inv-header-banner" id="inv-header-banner">
-                <!-- Vector SVG Background Layer -->
-                <svg class="inv-header-svg-bg" viewBox="0 0 1000 215" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="goldRibbonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stop-color="#b8860b" />
-                      <stop offset="25%" stop-color="#fef08a" />
-                      <stop offset="50%" stop-color="#d4af37" />
-                      <stop offset="75%" stop-color="#92400e" />
-                      <stop offset="100%" stop-color="#fef08a" />
-                    </linearGradient>
-                    <linearGradient id="goldThinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stop-color="#eab308" />
-                      <stop offset="50%" stop-color="#ffffff" />
-                      <stop offset="100%" stop-color="#ca8a04" />
-                    </linearGradient>
-                    <linearGradient id="lightBgGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stop-color="#ffffff" />
-                      <stop offset="60%" stop-color="#fdfbf7" />
-                      <stop offset="100%" stop-color="#fff8ed" />
-                    </linearGradient>
-                    <radialGradient id="bokehGlow1" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.45" />
-                      <stop offset="100%" stop-color="#fef08a" stop-opacity="0" />
-                    </radialGradient>
-                    <radialGradient id="bokehGlow2" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stop-color="#fde047" stop-opacity="0.3" />
-                      <stop offset="100%" stop-color="#fde047" stop-opacity="0" />
-                    </radialGradient>
-                  </defs>
-
-                  <!-- Right Section Base & Bokeh -->
-                  <rect x="0" y="0" width="1000" height="215" fill="#ffffff" />
-                  <rect x="0" y="0" width="1000" height="215" fill="url(#lightBgGrad)" opacity="0.9" />
-                  <circle cx="820" cy="40" r="45" fill="url(#bokehGlow1)" />
-                  <circle cx="930" cy="75" r="55" fill="url(#bokehGlow2)" />
-                  <circle cx="750" cy="65" r="28" fill="url(#bokehGlow1)" />
-                  <circle cx="810" cy="165" r="38" fill="url(#bokehGlow2)" />
-                  <circle cx="945" cy="175" r="30" fill="url(#bokehGlow1)" />
-
-                  <!-- Left Obsidian Black Polygon -->
-                  <polygon points="0,0 455,0 388,215 0,215" fill="#070707" />
-
-                  <!-- Dual Beveled Gold Dividing Ribbons -->
-                  <polygon points="455,0 463,0 396,215 388,215" fill="#d4af37" />
-                  <polygon points="466,0 469,0 402,215 399,215" fill="#ca8a04" opacity="0.9" />
-
-                  <!-- Top-Left Corner Geometric Accent -->
-                  <polygon points="0,0 50,0 0,50" fill="url(#goldRibbonGrad)" />
-                  <polygon points="0,0 14,0 0,14" fill="#070707" />
-                  <line x1="0" y1="54" x2="54" y2="0" stroke="url(#goldThinGrad)" stroke-width="2.5" />
-
-                  <!-- Bottom-Left Corner Geometric Accent -->
-                  <polygon points="0,175 28,215 0,215" fill="url(#goldRibbonGrad)" />
-                  <line x1="0" y1="171" x2="32" y2="215" stroke="url(#goldThinGrad)" stroke-width="2" />
-                </svg>
-
-                <!-- Dynamic Live HTML Content Overlay -->
-                <div class="inv-header-content">
-                  <!-- Left Brand Pane (Inside Black Polygon) -->
-                  <div class="inv-header-brand-pane">
-                    <div class="inv-header-logo-container">
-                      <img id="inv-header-logo-img" class="inv-header-logo-img" src="assets/dpv-official-logo.png" alt="Dewangan Photo &amp; Videography Logo">
-                    </div>
-                    <h1 class="inv-header-brand-title" id="inv-header-studio-name">DEWANGAN PHOTO &amp; VIDEOGRAPHY</h1>
-                    <div class="inv-header-brand-tagline" id="inv-header-studio-tagline">CAPTURE YOUR SPECIAL MOMENTS</div>
-                  </div>
-
-                  <!-- Middle Info Pane (Services & Contact Details) -->
-                  <div class="inv-header-info-pane">
-                    <div class="inv-header-memories-title" id="inv-header-memories-title">Memories</div>
-                    <div class="inv-header-forever-tag">
-                      <span class="gold-rule"></span>
-                      <span class="forever-label" id="inv-header-memories-sub">THAT LAST FOREVER</span>
-                      <span class="gold-rule"></span>
-                    </div>
-
-                    <!-- Services 3 Rows with Icons -->
-                    <div class="inv-header-services-group">
-                      <div class="inv-srv-row">
-                        <i data-lucide="camera" class="inv-srv-ico"></i>
-                        <span id="inv-header-srv1">Wedding &nbsp;|&nbsp; Pre-Wedding &nbsp;|&nbsp; Engagement</span>
-                      </div>
-                      <div class="inv-srv-row">
-                        <i data-lucide="gift" class="inv-srv-ico"></i>
-                        <span id="inv-header-srv2">Birthday &nbsp;|&nbsp; Anniversary &nbsp;|&nbsp; Maternity Shoot</span>
-                      </div>
-                      <div class="inv-srv-row">
-                        <i data-lucide="image" class="inv-srv-ico"></i>
-                        <span id="inv-header-srv3">Album Design &amp; Printing &nbsp;|&nbsp; Photo Printing</span>
-                      </div>
-                    </div>
-
-                    <!-- Contact Details 4 Rows with Icons -->
-                    <div class="inv-header-contacts-group">
-                      <div class="inv-cnt-row">
-                        <span class="inv-cnt-badge"><i data-lucide="map-pin"></i></span>
-                        <span id="inv-header-address">Shivpuri, Jamul, Durg (C.G.)</span>
-                      </div>
-                      <div class="inv-cnt-row">
-                        <span class="inv-cnt-badge"><i data-lucide="phone"></i></span>
-                        <span id="inv-header-phone">+91 93016 14549</span>
-                      </div>
-                      <div class="inv-cnt-row">
-                        <span class="inv-cnt-badge"><svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg></span>
-                        <span id="inv-header-instagram">dewangan_photo_and_videography</span>
-                      </div>
-                      <div class="inv-cnt-row">
-                        <span class="inv-cnt-badge"><i data-lucide="globe"></i></span>
-                        <span id="inv-header-website">www.dewanganphotoandvideography.in</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Right Camera Pane -->
-                  <div class="inv-header-camera-pane">
-                    <img class="inv-header-camera-art" src="assets/header-camera-bokeh.png" alt="DSLR Camera Art">
-                    <div class="inv-header-quote-text">
-                      <span id="inv-header-quote">"Stories Through Our Lens"</span> <span class="quote-heart">♡</span>
-                    </div>
-                  </div>
-                </div>
+                <img id="inv-header-banner-img" src="assets/header-banner-perfect.png" alt="Dewangan Photo &amp; Videography" style="width: 100%; height: 100%; display: block; object-fit: fill;">
               </div>
 
               <!-- 2. Inner Content Wrapper -->
@@ -838,9 +718,6 @@
                     <!-- Populated dynamically with Albums and Deliverables cards -->
                   </div>
                 </div>
-
-                <!-- EXPLICIT A4 2-PAGE SPLIT BREAK (Guaranteed Page 1 / Page 2 Natural Separation) -->
-                <div class="html2pdf__page-break" style="page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0;"></div>
 
                 <!-- Items / Services Table with 10 Rows & Translucent Watermark (Begins Page 2) -->
                 <div class="inv-table-wrapper">

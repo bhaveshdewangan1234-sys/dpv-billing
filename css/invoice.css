@@ -58,7 +58,14 @@
   background-color: #ffffff;
   overflow: hidden;
   box-sizing: border-box;
-  height: 188px;
+  height: 190px;
+}
+
+#inv-header-banner-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: fill;
 }
 
 .inv-header-svg-bg {

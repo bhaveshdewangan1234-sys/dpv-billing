@@ -123,4 +123,10 @@
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
+
+  /* Explicit 2-Page Split at Items Table for Native Print */
+  .inv-table-wrapper {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
 }

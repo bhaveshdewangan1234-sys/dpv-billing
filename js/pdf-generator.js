@@ -19,7 +19,7 @@ class DPVPDFGenerator {
 
     // Configuration for optimal full-bleed A4 layout and multi-page integrity
     const opt = {
-      margin: [0, 0, 0, 0], // Full bleed for luxury black & gold headers/footers
+      margin: 0, // Full bleed for luxury black & gold headers/footers
       filename: filename,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: {
@@ -38,7 +38,7 @@ class DPVPDFGenerator {
       },
       pagebreak: {
         mode: ['css', 'legacy'],
-        before: ['.html2pdf__page-break', '.inv-table-wrapper'],
+        before: ['.inv-table-wrapper'],
         avoid: ['.avoid-break', '.inv-terms-box', '.inv-bottom-signatures-row', '.inv-payment-totals-row', '.inv-main-table tr', '.inv-pay-history-item', '.shoot-summary-card', '.inv-deliverables-card']
       }
     };
