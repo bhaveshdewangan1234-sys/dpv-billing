@@ -374,6 +374,14 @@
       });
       assert("Selecting 2 terms results in exactly 2 terms on compiled invoice", twoTermsInv.terms.length === 2 && twoTermsInv.terms[0] === "Custom term 1");
 
+      // 21b. Official 9 Studio Terms Policy Verification
+      const officialTerms = window.dpvStore.getTerms();
+      assert("Official terms catalog contains exactly 9 studio policies", officialTerms.length === 9);
+      assert("Term 1 contains 50% advance requirement", officialTerms[0].text.includes("50% एडवांस भुगतान"));
+      assert("Term 2 specifies 50% payment before photo delivery rule", officialTerms[1].text.includes("कम से कम 50% भुगतान किए जाने के बाद ही"));
+      assert("Term 3 specifies 30-45 working days delivery schedule", officialTerms[2].text.includes("30–45 कार्य दिवस"));
+      assert("Term 4 specifies 90 days data backup policy", officialTerms[3].text.includes("अधिकतम 90 दिनों"));
+
       // 22. Customer Search by Invoice Number Test
       const searchCust = window.dpvStore.saveCustomer({
         name: "Invoice Search Client",
