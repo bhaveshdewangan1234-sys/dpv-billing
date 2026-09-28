@@ -676,6 +676,82 @@ class DPVStore {
     return this.memoryCache.settings;
   }
 
+  // Remote Cloud Sync Methods (Multi-Device Live Sync)
+  mergeRemoteInvoice(remoteInv) {
+    if (!remoteInv || !remoteInv.id) return false;
+    const list = this.memoryCache.invoices || [];
+    const index = list.findIndex(i => i.id === remoteInv.id);
+    let isNew = false;
+    
+    if (index >= 0) {
+      const local = list[index];
+      const localUpdated = new Date(local.updatedAt || local.createdAt || 0).getTime();
+      const remoteUpdated = new Date(remoteInv.updatedAt || remoteInv.createdAt || 0).getTime();
+      if (remoteUpdated >= localUpdated) {
+        list[index] = remoteInv;
+      }
+    } else {
+      list.unshift(remoteInv);
+      isNew = true;
+    }
+    this.memoryCache.invoices = list;
+    this.persist();
+    this.emit('invoices_updated', list);
+    return isNew;
+  }
+
+  removeRemoteInvoice(id) {
+    if (!id) return;
+    const list = this.memoryCache.invoices || [];
+    this.memoryCache.invoices = list.filter(i => i.id !== id);
+    this.persist();
+    this.emit('invoices_updated', this.memoryCache.invoices);
+  }
+
+  mergeRemoteCustomer(remoteCust) {
+    if (!remoteCust || !remoteCust.id) return;
+    const list = this.memoryCache.customers || [];
+    const index = list.findIndex(c => c.id === remoteCust.id);
+    if (index >= 0) {
+      list[index] = remoteCust;
+    } else {
+      list.unshift(remoteCust);
+    }
+    this.memoryCache.customers = list;
+    this.persist();
+    this.emit('customers_updated', list);
+  }
+
+  removeRemoteCustomer(id) {
+    if (!id) return;
+    const list = this.memoryCache.customers || [];
+    this.memoryCache.customers = list.filter(c => c.id !== id);
+    this.persist();
+    this.emit('customers_updated', this.memoryCache.customers);
+  }
+
+  mergeRemotePayment(remotePay) {
+    if (!remotePay || !remotePay.id) return;
+    const list = this.memoryCache.payments || [];
+    const index = list.findIndex(p => p.id === remotePay.id);
+    if (index >= 0) {
+      list[index] = remotePay;
+    } else {
+      list.unshift(remotePay);
+    }
+    this.memoryCache.payments = list;
+    this.persist();
+    this.emit('payments_updated', list);
+  }
+
+  removeRemotePayment(id) {
+    if (!id) return;
+    const list = this.memoryCache.payments || [];
+    this.memoryCache.payments = list.filter(p => p.id !== id);
+    this.persist();
+    this.emit('payments_updated', this.memoryCache.payments);
+  }
+
   // Invoices CRUD
   getInvoices() {
     return [...(this.memoryCache.invoices || [])];
@@ -729,6 +805,9 @@ class DPVStore {
 
     this.persist();
     this.emit('invoices_updated', list);
+    if (window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+      window.dpvFirebaseSync.syncInvoice(invoiceData);
+    }
     return invoiceData;
   }
 
@@ -743,6 +822,9 @@ class DPVStore {
     this.persist();
     this.logAudit('INVOICE_DELETED', `Deleted invoice ${inv.invoiceNumber}`);
     this.emit('invoices_updated', this.memoryCache.invoices);
+    if (window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+      window.dpvFirebaseSync.deleteInvoice(id);
+    }
     return true;
   }
 
@@ -876,6 +958,9 @@ class DPVStore {
     this.memoryCache.customers = list;
     this.persist();
     this.emit('customers_updated', list);
+    if (window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+      window.dpvFirebaseSync.syncCustomer(customerData);
+    }
     return customerData;
   }
 
@@ -884,6 +969,9 @@ class DPVStore {
     this.memoryCache.customers = list.filter(c => c.id !== id);
     this.persist();
     this.emit('customers_updated', this.memoryCache.customers);
+    if (window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+      window.dpvFirebaseSync.deleteCustomer(id);
+    }
     return true;
   }
 
@@ -1142,6 +1230,9 @@ class DPVStore {
 
     this.persist();
     this.emit('payments_updated', this.memoryCache.payments);
+    if (window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+      window.dpvFirebaseSync.syncPayment(payment);
+    }
     return payment;
   }
 
@@ -1188,6 +1279,9 @@ class DPVStore {
 
     this.persist();
     this.emit('payments_updated', this.memoryCache.payments);
+    if (window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+      window.dpvFirebaseSync.deletePayment(paymentId);
+    }
     return true;
   }
 

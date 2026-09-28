@@ -116,6 +116,9 @@
           <h1 id="page-title" class="page-title">Dashboard Overview</h1>
         </div>
         <div class="navbar-right">
+          <div id="cloud-sync-status-badge" class="badge badge-secondary" style="margin-right: 6px; font-size: 11px; padding: 6px 12px; cursor: pointer; display: inline-flex; align-items: center;" title="Multi-Device Cloud Sync (Click to Sync All Now)" onclick="window.dpvFirebaseSync && window.dpvFirebaseSync.uploadAllDataToCloud()">
+            <i data-lucide="cloud-off" style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Cloud Sync
+          </div>
           <button id="quick-new-invoice-btn" class="btn btn-primary btn-sm">
             <i data-lucide="plus"></i> Create Invoice
           </button>
@@ -1261,6 +1264,15 @@
                     <input type="file" id="restore-backup-file-input" accept=".json" style="display: none;">
                   </label>
                 </div>
+
+                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-color);">
+                <h4 style="font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 8px;">6. Multi-Device Live Cloud Sync (Google Firebase)</h4>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+                  Connected Project: <strong style="color: var(--accent);">dpv-studio-billing</strong>. Real-time automatic synchronization is enabled across all 3 studio mobiles and PCs.
+                </p>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                  <button type="button" class="btn btn-primary" onclick="window.dpvFirebaseSync.uploadAllDataToCloud()"><i data-lucide="cloud-upload"></i> Sync All Current Bills &amp; Data to Cloud Now</button>
+                </div>
               </form>
             </div>
           </div>
@@ -1526,6 +1538,9 @@
   <script src="js/pdf-generator.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/backup.js"></script>
+  <!-- Firebase Cloud Sync SDKs (Real-Time Multi-Device Synchronization) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/app.js"></script>
 

@@ -33,7 +33,12 @@ class DPVApp {
     this.populateServiceDropdowns();
     this.refreshAllData();
 
-    // 5. Icons
+    // 5. Initialize Real-Time Multi-Device Cloud Sync
+    if (window.dpvFirebaseSync) {
+      window.dpvFirebaseSync.init();
+    }
+
+    // 6. Icons
     if (window.lucide) window.lucide.createIcons();
 
     // 6. Handle URL navigation parameters (e.g. ?preview=1, ?invoice=inv_demo_1, or ?view=view-new-invoice)
