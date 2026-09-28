@@ -48,7 +48,7 @@
       
       const settings = window.dpvStore.getSettings();
       assert("Default studio name is 'Dewangan Photo & Videography'", settings.studioName === "Dewangan Photo & Videography");
-      assert("Default mobile contains 93403 or 9301614549", settings.mobile.includes("93403") || settings.mobile.includes("9301614549"));
+      assert("Default mobile is +91 93016 14549", settings.mobile && settings.mobile.replace(/\s+/g, '').includes("9301614549"));
       assert("Default UPI ID is '9301614549@ybl'", settings.upiId === "9301614549@ybl");
 
       // 2. Numbering Sequence Test
@@ -306,7 +306,7 @@
       // 17. Official DPV Logo & Brand Details Test
       const officialSettings = window.dpvStore.getSettings();
       assert("Official logo path set to assets/dpv-official-logo.png", officialSettings.logoUrl === "assets/dpv-official-logo.png");
-      assert("Official mobile is 9340363046", officialSettings.mobile.includes("93403"));
+      assert("Official mobile is +91 93016 14549", officialSettings.mobile && officialSettings.mobile.replace(/\s+/g, '').includes("9301614549"));
       assert("Official footer tagline is 'Capture Your Moments'", officialSettings.footerTagline === "Capture Your Moments");
       assert("Official Instagram handle is dewangan_photo_and_videography", officialSettings.instagram === "dewangan_photo_and_videography");
       assert("Official website is www.dewanganphotoandvideography.in", officialSettings.website === "www.dewanganphotoandvideography.in");

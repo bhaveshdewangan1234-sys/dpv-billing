@@ -1715,14 +1715,14 @@ class DPVApp {
     setElText('inv-header-srv2', snap.headerServices2, 'Birthday | Anniversary | Maternity Shoot');
     setElText('inv-header-srv3', snap.headerServices3, 'Album Design & Printing | Photo Printing');
     setElText('inv-header-address', snap.address, 'Shivpuri, Jamul, Durg (C.G.)');
-    setElText('inv-header-phone', snap.mobile, '+91 93403 63046');
+    setElText('inv-header-phone', snap.mobile, '+91 93016 14549');
     setElText('inv-header-instagram', snap.instagram, 'dewangan_photo_and_videography');
     setElText('inv-header-website', snap.website, 'www.dewanganphotoandvideography.in');
     setElText('inv-header-quote', snap.headerQuote, '"Stories Through Our Lens"');
 
     // Live Dynamic Footer Typography
     setElText('inv-footer-address', snap.address, 'Shivpuri, Jamul, Durg (C.G.)');
-    setElText('inv-footer-phone', snap.mobile, '+91 93403 63046');
+    setElText('inv-footer-phone', snap.mobile, '+91 93016 14549');
     setElText('inv-footer-instagram', snap.instagram, 'dewangan_photo_and_videography');
     setElText('inv-footer-website', snap.website, 'www.dewanganphotoandvideography.in');
     setElText('inv-footer-tagline-top', snap.footerTaglineTop || 'Capture', 'Capture');

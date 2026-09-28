@@ -19,9 +19,9 @@ class DPVStore {
         studioName: "Dewangan Photo & Videography",
         shortName: "DPV",
         ownerName: "Bhavesh Dewangan",
-        mobile: "+91 93403 63046",
-        altMobile: "+91 9301614549",
-        whatsapp: "9340363046",
+        mobile: "+91 93016 14549",
+        altMobile: "+91 93016 14549",
+        whatsapp: "9301614549",
         email: "dewanganstudio@gmail.com",
         address: "Shivpuri, Jamul, Durg (C.G.)",
         city: "Durg",
@@ -290,13 +290,13 @@ class DPVStore {
             studioName: "Dewangan Photo & Videography",
             shortName: "DPV",
             ownerName: "Bhavesh Dewangan",
-            mobile: "+91 93403 63046",
-            altMobile: "+91 9301614549",
-            whatsapp: "9340363046",
+            mobile: "+91 93016 14549",
+            altMobile: "+91 93016 14549",
+            whatsapp: "9301614549",
             address: "Shivpuri, Jamul, Durg (C.G.)",
             website: "www.dewanganphotoandvideography.in",
             instagram: "dewangan_photo_and_videography",
-            upiId: "9340363046@ybl",
+            upiId: "9301614549@ybl",
             headerTagline: "CAPTURE YOUR SPECIAL MOMENTS",
             headerMemoriesTitle: "Memories",
             headerMemoriesSub: "THAT LAST FOREVER",
@@ -443,13 +443,13 @@ class DPVStore {
             studioName: "Dewangan Photo & Videography",
             shortName: "DPV",
             ownerName: "Bhavesh Dewangan",
-            mobile: "+91 93403 63046",
-            altMobile: "+91 9301614549",
-            whatsapp: "9340363046",
+            mobile: "+91 93016 14549",
+            altMobile: "+91 93016 14549",
+            whatsapp: "9301614549",
             address: "Shivpuri, Jamul, Durg (C.G.)",
             website: "www.dewanganphotoandvideography.in",
             instagram: "dewangan_photo_and_videography",
-            upiId: "9340363046@ybl",
+            upiId: "9301614549@ybl",
             headerTagline: "CAPTURE YOUR SPECIAL MOMENTS",
             headerMemoriesTitle: "Memories",
             headerMemoriesSub: "THAT LAST FOREVER",
@@ -580,9 +580,10 @@ class DPVStore {
             }
             // Update businessSnapshot to official contact & tagline
             if (inv.businessSnapshot) {
-              inv.businessSnapshot.mobile = "+91 93403 63046";
-              inv.businessSnapshot.altMobile = "+91 9301614549";
-              inv.businessSnapshot.whatsapp = "9340363046";
+              inv.businessSnapshot.mobile = "+91 93016 14549";
+              inv.businessSnapshot.altMobile = "+91 93016 14549";
+              inv.businessSnapshot.whatsapp = "9301614549";
+              inv.businessSnapshot.upiId = "9301614549@ybl";
               inv.businessSnapshot.footerTagline = "Capture Your Moments";
               inv.businessSnapshot.footerTaglineTop = "Capture";
               inv.businessSnapshot.footerTaglineBottom = "Your Moments";
