@@ -43,6 +43,27 @@ class DPVPDFGenerator {
       }
     };
 
+    // Desktop PDF Alignment Fix: Prevent html2canvas offset/cropping caused by flexbox center on wide screens
+    // Mobile PDF (<=860px) code path remains 100% IDENTICAL and untouched.
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth > 860;
+    let desktopContainer = null;
+    let prevJustify = '';
+    let prevPad = '';
+    let prevMarginLeft = '';
+    let prevMarginRight = '';
+
+    if (isDesktop && invoiceElement && invoiceElement.parentElement) {
+      desktopContainer = invoiceElement.parentElement;
+      prevJustify = desktopContainer.style.justifyContent;
+      prevPad = desktopContainer.style.padding;
+      prevMarginLeft = invoiceElement.style.marginLeft;
+      prevMarginRight = invoiceElement.style.marginRight;
+      desktopContainer.style.justifyContent = 'flex-start';
+      desktopContainer.style.padding = '0';
+      invoiceElement.style.marginLeft = '0';
+      invoiceElement.style.marginRight = '0';
+    }
+
     try {
       if (typeof html2pdf !== 'undefined') {
         const worker = html2pdf().set(opt).from(invoiceElement);
@@ -62,6 +83,13 @@ class DPVPDFGenerator {
       console.error("[DPVPDFGenerator] PDF generation failed, triggering print fallback:", err);
       window.print();
       return false;
+    } finally {
+      if (isDesktop && desktopContainer) {
+        desktopContainer.style.justifyContent = prevJustify;
+        desktopContainer.style.padding = prevPad;
+        invoiceElement.style.marginLeft = prevMarginLeft;
+        invoiceElement.style.marginRight = prevMarginRight;
+      }
     }
   }
 

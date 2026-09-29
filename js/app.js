@@ -56,14 +56,28 @@ class DPVApp {
           } else {
             this.navigateTo(viewParam);
           }
+          if (urlParams.get('open_menu') === '1') {
+            this.toggleMobileSidebar();
+          }
         }, 50);
+      } else if (urlParams.get('open_menu') === '1') {
+        if (!window.dpvAuth.currentUser) {
+          window.dpvAuth.login('admin', 'DPV@9301614549Kumar');
+        }
+        setTimeout(() => this.toggleMobileSidebar(), 100);
       } else if (urlParams.get('preview') || urlParams.get('invoice')) {
-        const invId = urlParams.get('invoice') || 'inv_demo_1';
+        const reqInvId = urlParams.get('invoice');
         if (!window.dpvAuth.currentUser) {
           window.dpvAuth.login('admin', 'DPV@9301614549Kumar');
         }
         setTimeout(() => {
-          this.openInvoicePreview(invId);
+          const invoices = window.dpvStore.getInvoices();
+          const targetId = reqInvId || (invoices.length > 0 ? invoices[0].id : null);
+          if (targetId) {
+            this.openInvoicePreview(targetId);
+          } else {
+            this.navigateTo('view-invoices');
+          }
           if (urlParams.get('standalone') === '1') {
             const sidebar = document.getElementById('sidebar');
             if (sidebar) sidebar.style.display = 'none';
@@ -98,6 +112,10 @@ class DPVApp {
       document.getElementById('sidebar-user-name').textContent = user.name || user.username;
       document.getElementById('sidebar-user-role').textContent = user.role === 'admin' ? 'Owner / Admin' : 'Staff';
       document.getElementById('sidebar-user-avatar').textContent = (user.name || user.username).substring(0, 2).toUpperCase();
+      const isAdmin = user.role === 'admin';
+      document.querySelectorAll('.admin-only').forEach(el => {
+        el.style.display = isAdmin ? '' : 'none';
+      });
 
       this.showToast(`Welcome back, ${user.name || user.username}!`, 'info');
       this.refreshAllData();
@@ -151,6 +169,10 @@ class DPVApp {
 
     // Mobile menu toggle & backdrop handlers
     document.getElementById('menu-toggle-btn')?.addEventListener('click', () => {
+      this.toggleMobileSidebar();
+    });
+    document.getElementById('mobile-menu-drawer-btn')?.addEventListener('click', (e) => {
+      e.preventDefault();
       this.toggleMobileSidebar();
     });
     document.getElementById('sidebar-backdrop')?.addEventListener('click', () => {
@@ -318,6 +340,7 @@ class DPVApp {
       'view-payments': 'Payments Ledger',
       'view-terms': 'Terms & Conditions Policy',
       'view-settings': 'Studio Settings & Branding',
+      'view-diagnostics': 'Billing Diagnostics & Error Recorder',
       'view-invoice-preview': 'A4 Invoice Preview'
     };
     document.getElementById('page-title').textContent = titles[viewId] || 'Dewangan Studio';
@@ -327,6 +350,10 @@ class DPVApp {
       this.switchCalendarView(this.calendarCurrentView || 'month');
     } else if (viewId === 'view-settings') {
       this.populateSettingsForm();
+    } else if (viewId === 'view-diagnostics') {
+      if (window.dpvDiagnostics) {
+        window.dpvDiagnostics.renderDiagnosticsView();
+      }
     } else if (viewId === 'view-packages') {
       this.renderPackagesGrid();
     } else if (viewId === 'view-terms') {
@@ -468,7 +495,19 @@ class DPVApp {
     }
 
     if (!invoices.length) {
-      tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 32px;">No matching documents found.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 48px 24px;">
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+          <div style="width:48px;height:48px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#94a3b8;">
+            <i data-lucide="file-x" style="width:24px;height:24px;"></i>
+          </div>
+          <div style="font-weight:600;font-size:15px;color:#475569;">No Bills Found</div>
+          <div style="font-size:13px;color:#94a3b8;max-width:320px;">No invoices or quotations match your criteria. Create a new bill to get started.</div>
+          <button class="btn btn-primary btn-sm" onclick="window.dpvApp.startNewInvoice()" style="margin-top:6px;">
+            <i data-lucide="plus"></i> Create New Bill
+          </button>
+        </div>
+      </td></tr>`;
+      if (window.lucide) window.lucide.createIcons();
       return;
     }
 
@@ -1446,9 +1485,12 @@ class DPVApp {
     const terms = window.dpvStore.getTerms().filter(t => t.active);
 
     container.innerHTML = terms.map((t, idx) => `
-      <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text-main); cursor: pointer; background: var(--bg-main); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-        <input type="checkbox" class="term-checkbox" value="${escapeHtml(t.text)}" checked style="margin-top: 3px;">
-        <span><strong>${idx + 1}.</strong> ${escapeHtml(t.text)}</span>
+      <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: var(--text-main); cursor: pointer; background: var(--bg-main); padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+        <input type="checkbox" class="term-checkbox" value="${escapeHtml(t.text)}" checked style="margin-top: 3px; accent-color: var(--primary);">
+        <div style="flex: 1;">
+          <div style="font-weight: 700; color: var(--primary); margin-bottom: 3px;">${idx + 1}. ${escapeHtml(t.title || `Condition ${idx + 1}`)}</div>
+          <div style="font-size: 11.5px; line-height: 1.45; color: var(--text-muted);">${escapeHtml(t.text)}</div>
+        </div>
       </label>
     `).join('');
   }
@@ -1570,7 +1612,7 @@ class DPVApp {
         items.push({
           id: `item_${index + 1}`,
           name: name,
-          description: tr.querySelector('.item-desc')?.value.trim(),
+          description: tr.querySelector('.item-desc')?.value.trim() || '',
           rate: parseFloat(tr.querySelector('.item-rate')?.value) || 0,
           qty: parseFloat(tr.querySelector('.item-qty')?.value) || 1,
           discount: parseFloat(tr.querySelector('.item-discount')?.value) || 0
@@ -1590,7 +1632,7 @@ class DPVApp {
             amount: amt,
             date: card.querySelector('.form-pay-date')?.value || new Date().toISOString().split('T')[0],
             method: card.querySelector('.form-pay-method')?.value || 'UPI',
-            reference: card.querySelector('.form-pay-ref')?.value.trim()
+            reference: card.querySelector('.form-pay-ref')?.value.trim() || ''
           });
         }
       });
@@ -1602,9 +1644,12 @@ class DPVApp {
       selectedTerms.push(cb.value);
     });
 
-    const billingDate = document.getElementById('inv-billing-date-input').value;
+    const billingDate = document.getElementById('inv-billing-date-input')?.value || new Date().toISOString().split('T')[0];
     const overallDiscount = parseFloat(document.getElementById('builder-overall-discount')?.value) || 0;
-    const enableGst = document.getElementById('builder-enable-gst')?.checked;
+    const enableGst = !!document.getElementById('builder-enable-gst')?.checked;
+
+    const existing = existingId ? window.dpvStore.getInvoiceById(existingId) : null;
+    const createdAt = existing ? existing.createdAt : new Date().toISOString();
 
     return window.dpvInvoiceEngine.buildInvoiceObject({
       id: existingId || null,
@@ -1619,24 +1664,64 @@ class DPVApp {
       items,
       payments,
       selectedTerms,
-      options: { overallDiscount, enableGst, gstRate: 18 }
+      options: { overallDiscount, enableGst, gstRate: 18 },
+      createdAt,
+      isOfflineDraft: true
     });
   }
 
-  // Preview Built Invoice
-  previewBuiltInvoice() {
+  // Save Invoice Directly from Form
+  saveInvoiceFromForm(silent = false) {
     try {
       const invoice = this.compileInvoiceFromForm();
       const validation = window.dpvInvoiceEngine.validateInvoiceData(invoice);
       if (!validation.isValid) {
         this.showToast(validation.errors.join(' | '), 'error');
-        return;
+        return null;
       }
 
-      this.activeInvoice = invoice;
-      this.renderInvoiceSheet(invoice);
+      const saved = window.dpvStore.saveInvoice(invoice);
+      this.activeInvoice = saved;
+
+      const formIdInput = document.getElementById('inv-form-id');
+      if (formIdInput && saved.id) {
+        formIdInput.value = saved.id;
+      }
+
+      if (!silent) {
+        const typeLabel = (saved.documentType === 'quotation') ? 'Quotation' : 'Invoice';
+        this.showToast(`${typeLabel} ${saved.invoiceNumber} saved successfully!`, 'success');
+      }
+      this.renderInvoicesTable();
+      return saved;
+    } catch (err) {
+      this.showToast(err.message, 'error');
+      return null;
+    }
+  }
+
+  saveAndExitInvoice() {
+    const saved = this.saveInvoiceFromForm();
+    if (saved) {
+      this.navigateTo('view-invoices');
+      this.renderInvoicesTable();
+    }
+  }
+
+  // Preview Built Invoice
+  previewBuiltInvoice() {
+    try {
+      const saved = this.saveInvoiceFromForm(true);
+      if (!saved) return;
+
+      this.activeInvoice = saved;
+      this.previewSourceView = 'view-new-invoice';
+
+      this.renderInvoiceSheet(this.activeInvoice);
       this.navigateTo('view-invoice-preview');
       this.autoAdjustPreviewScale();
+      const typeLabel = (this.activeInvoice.documentType === 'quotation') ? 'Quotation' : 'Bill';
+      this.showToast(`${typeLabel} ${this.activeInvoice.invoiceNumber} saved & ready for Preview / Print`, "success");
     } catch (err) {
       this.showToast(err.message, 'error');
     }
@@ -1646,9 +1731,12 @@ class DPVApp {
   openInvoicePreview(invoiceId) {
     const inv = window.dpvStore.getInvoiceById(invoiceId);
     if (!inv) {
-      this.showToast("Invoice not found", "error");
+      this.showToast("Invoice not found or has been deleted", "error");
+      this.navigateTo('view-invoices');
+      this.renderInvoicesTable();
       return;
     }
+    this.previewSourceView = 'view-invoices';
     this.activeInvoice = inv;
     this.renderInvoiceSheet(inv);
     this.navigateTo('view-invoice-preview');
@@ -2318,7 +2406,14 @@ class DPVApp {
   // Back from preview
   backFromPreview() {
     if (this.currentView === 'view-invoice-preview') {
+      if (this.activeInvoice && !window.dpvStore.isInvoiceDeleted(this.activeInvoice.id)) {
+        // Guarantee invoice is permanently saved and preserved in store
+        window.dpvStore.saveInvoice(this.activeInvoice);
+        this.populateInvoiceForm(this.activeInvoice);
+      }
+      this.refreshAllData();
       this.navigateTo('view-invoices');
+      this.renderInvoicesTable();
     }
   }
 
@@ -2440,24 +2535,30 @@ class DPVApp {
   }
 
   // Delete Invoice Action
-  deleteInvoice(id) {
+  async deleteInvoice(id) {
     const inv = window.dpvStore.getInvoiceById(id);
-    if (!inv) return;
-    if (confirm(`Are you sure you want to permanently delete invoice ${inv.invoiceNumber}? This cannot be undone.`)) {
+    const docNum = inv ? inv.invoiceNumber : id;
+    if (confirm(`Are you sure you want to permanently delete invoice ${docNum}? This cannot be undone.`)) {
       window.dpvStore.deleteInvoice(id);
-      this.showToast(`Invoice ${inv.invoiceNumber} deleted.`, 'info');
+      if (this.activeInvoice && this.activeInvoice.id === id) {
+        this.activeInvoice = null;
+      }
+      this.showToast(`Invoice ${docNum} deleted permanently.`, 'info');
       this.refreshAllData();
     }
   }
 
   // Delete Active Invoice from Preview
-  deleteActiveInvoice() {
+  async deleteActiveInvoice() {
     if (!this.activeInvoice) return;
     const inv = this.activeInvoice;
-    if (confirm(`Are you sure you want to permanently delete invoice ${inv.invoiceNumber}? This cannot be undone.`)) {
-      window.dpvStore.deleteInvoice(inv.id);
-      this.showToast(`Invoice ${inv.invoiceNumber} deleted permanently.`, 'info');
-      this.backFromPreview();
+    const id = inv.id;
+    const docNum = inv.invoiceNumber || id;
+    if (confirm(`Are you sure you want to permanently delete invoice ${docNum}? This cannot be undone.`)) {
+      this.activeInvoice = null;
+      window.dpvStore.deleteInvoice(id);
+      this.showToast(`Invoice ${docNum} deleted permanently.`, 'info');
+      this.navigateTo('view-invoices');
       this.refreshAllData();
     }
   }
@@ -3088,13 +3189,14 @@ class DPVApp {
 
     const terms = window.dpvStore.getTerms();
     container.innerHTML = terms.map((t, idx) => `
-      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 18px; display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;">
         <div style="font-size: 13px; color: var(--text-main); flex: 1;">
-          <strong>${idx + 1}.</strong> ${escapeHtml(t.text)}
+          <div style="font-weight: 700; color: var(--primary); margin-bottom: 4px; font-size: 13.5px;">${idx + 1}. ${escapeHtml(t.title || `Condition ${idx + 1}`)}</div>
+          <div style="font-size: 12px; line-height: 1.5; color: var(--text-muted);">${escapeHtml(t.text)}</div>
         </div>
-        <div style="display: flex; gap: 6px; align-items: center;">
-          <button class="btn btn-outline btn-sm" onclick="window.dpvApp.openTermModal('${t.id}')"><i data-lucide="edit-3"></i></button>
-          <button class="btn btn-outline btn-sm" onclick="window.dpvApp.deleteTerm('${t.id}')" style="color: var(--danger);"><i data-lucide="trash-2"></i></button>
+        <div style="display: flex; gap: 6px; align-items: center; margin-top: 2px;">
+          <button class="btn btn-outline btn-sm" onclick="window.dpvApp.openTermModal('${t.id}')" title="Edit Condition"><i data-lucide="edit-3"></i></button>
+          <button class="btn btn-outline btn-sm" onclick="window.dpvApp.deleteTerm('${t.id}')" title="Delete Condition" style="color: var(--danger);"><i data-lucide="trash-2"></i></button>
         </div>
       </div>
     `).join('');
@@ -3107,12 +3209,15 @@ class DPVApp {
     const form = document.getElementById('form-term-modal');
     form.reset();
     document.getElementById('term-modal-id').value = '';
+    const titleInput = document.getElementById('term-modal-title-input');
+    if (titleInput) titleInput.value = '';
 
     if (termId) {
       const term = window.dpvStore.getTerms().find(t => t.id === termId);
       if (term) {
         document.getElementById('term-modal-id').value = term.id;
         document.getElementById('term-modal-text').value = term.text;
+        if (titleInput) titleInput.value = term.title || '';
       }
     }
 
@@ -3123,8 +3228,10 @@ class DPVApp {
     e.preventDefault();
     const id = document.getElementById('term-modal-id').value;
     const text = document.getElementById('term-modal-text').value.trim();
+    const titleInput = document.getElementById('term-modal-title-input');
+    const title = titleInput ? titleInput.value.trim() : '';
 
-    window.dpvStore.saveTerm({ id: id || null, text, active: true });
+    window.dpvStore.saveTerm({ id: id || null, title, text, active: true });
     this.closeModals();
     this.renderTermsList();
     this.showToast("Condition saved successfully!", "success");

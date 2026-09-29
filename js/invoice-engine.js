@@ -189,7 +189,9 @@ class DPVInvoiceEngine {
     options = {},
     existingSnapshot = null,
     isRevisionUnlock = false,
-    revisionReason = ''
+    revisionReason = '',
+    createdAt = null,
+    isOfflineDraft = false
   }) {
     const isNew = !id;
     const finalId = id || (documentType === 'quotation' ? 'quot_' + Date.now() : 'inv_' + Date.now());
@@ -216,10 +218,11 @@ class DPVInvoiceEngine {
       id: finalId,
       documentType, // 'invoice' or 'quotation'
       invoiceNumber: finalNumber,
-      quotationNumber: documentType === 'quotation' ? finalNumber : quotationNumber,
+      quotationNumber: documentType === 'quotation' ? finalNumber : (quotationNumber || ''),
       invoiceDate: finalDate,
       status, // 'draft' or 'finalized'
       paymentStatus: documentType === 'quotation' ? 'QUOTATION' : calc.paymentStatus,
+      isOfflineDraft: !!isOfflineDraft,
       paymentMethod: effectivePayments.length > 0 ? (effectivePayments[effectivePayments.length - 1].method || 'UPI') : 'UPI',
       customer: {
         id: customer.id || null,
@@ -265,7 +268,7 @@ class DPVInvoiceEngine {
           dayNumber: sd.dayNumber || (i + 1),
           date: sd.date || '',
           dayName: sd.dayName || (sd.date ? new Date(sd.date).toLocaleDateString('en-US', { weekday: 'long' }) : ''),
-          eventName: sd.eventName || sd.title || 'Ceremony',
+          eventName: sd.eventName || sd.title || sd.eventTitle || 'Ceremony',
           timings: sd.timings || (sd.startTime && sd.endTime ? `${sd.startTime} – ${sd.endTime}` : '') || sd.session || '',
           startTime: sd.startTime || '',
           endTime: sd.endTime || '',
@@ -334,7 +337,7 @@ class DPVInvoiceEngine {
         : window.dpvStore.getTerms().filter(t => t.active).map(t => t.text),
       businessSnapshot,
       revisions: [],
-      createdAt: isNew ? new Date().toISOString() : undefined,
+      createdAt: createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 

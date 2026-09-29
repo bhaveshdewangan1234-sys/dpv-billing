@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -23,9 +23,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@600;700;800&family=Great+Vibes&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/main.css?v=1.3.4">
-  <link rel="stylesheet" href="css/invoice.css?v=1.3.4">
-  <link rel="stylesheet" href="css/print.css?v=1.3.4">
+  <link rel="stylesheet" href="css/main.css?v=1.3.5">
+  <link rel="stylesheet" href="css/invoice.css?v=1.3.5">
+  <link rel="stylesheet" href="css/print.css?v=1.3.5">
 </head>
 <body>
 
@@ -91,6 +91,7 @@
         
         <li class="menu-category">Settings &amp; System</li>
         <li><a class="menu-item" data-view="view-settings"><i data-lucide="settings"></i> Studio Settings</a></li>
+        <li><a class="menu-item admin-only" data-view="view-diagnostics" id="sidebar-diagnostics-link"><i data-lucide="activity"></i> Billing Diagnostics</a></li>
       </ul>
 
       <div class="sidebar-footer">
@@ -1202,8 +1203,113 @@
                   <button type="button" class="btn btn-outline" onclick="window.dpvApp && window.dpvApp.checkForAppUpdates(true)">
                     <i data-lucide="refresh-cw"></i> Check &amp; Force Update App Now
                   </button>
+                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-color);">
+                <h4 style="font-size: 14px; font-weight: 700; color: #dc2626; margin-bottom: 8px;">8. Billing Diagnostics &amp; Error Recorder (Admin Only)</h4>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+                  Temporary troubleshooting recorder to track bill saves, PDF generation, printing, back button transitions, and sync events.
+                </p>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                  <button type="button" class="btn btn-outline" style="border-color: #dc2626; color: #dc2626;" onclick="window.dpvApp && window.dpvApp.navigateTo('view-diagnostics')">
+                    <i data-lucide="activity"></i> Open Billing Diagnostics
+                  </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- 12. VIEW: BILLING DIAGNOSTICS & ERROR RECORDER (Admin-Only Troubleshooting System) -->
+        <section id="view-diagnostics" class="app-view" style="display: none;">
+          <div class="card">
+            <div class="card-header" style="flex-wrap: wrap; gap: 12px; align-items: center;">
+              <div>
+                <h3 class="card-title" style="color: #dc2626;">
+                  <i data-lucide="activity"></i> Billing Diagnostics &amp; Error Recorder
+                  <span id="diag-mode-status-badge" style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; margin-left: 8px;">RECORDER ON</span>
+                </h3>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                  Real-time action audit, bill lifecycle tracing, sync monitor &amp; automated error detector
+                </p>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                <button type="button" id="diag-mode-toggle-btn" class="btn btn-primary btn-sm" onclick="window.dpvDiagnostics.setEnabled(!window.dpvDiagnostics.isEnabled())">
+                  <i data-lucide="toggle-right"></i> Recording is ACTIVE
+                </button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="window.dpvDiagnostics.renderDiagnosticsView()" title="Refresh Log Table">
+                  <i data-lucide="refresh-cw"></i> Refresh
+                </button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="window.dpvDiagnostics.runDiagnosticSelfTest()" title="Run Self-Test Lifecycle">
+                  <i data-lucide="flask-conical"></i> Self-Test
+                </button>
+                <div class="dropdown-wrapper" style="position: relative; display: inline-flex; gap: 6px;">
+                  <button type="button" class="btn btn-primary btn-sm" onclick="window.dpvDiagnostics.exportReport('json')" style="background: #16a34a; border-color: #16a34a;" title="Export Comprehensive Diagnostic Report">
+                    <i data-lucide="download"></i> Export Report (JSON)
+                  </button>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="window.dpvDiagnostics.exportReport('text')" title="Export Readable Text Report">
+                    <i data-lucide="file-text"></i> Text
+                  </button>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" style="color: #dc2626; border-color: #fca5a5;" onclick="window.dpvDiagnostics.clearLogs()" title="Clear Diagnostic Logs">
+                  <i data-lucide="trash-2"></i> Clear
+                </button>
+              </div>
+            </div>
+
+            <!-- Diagnostics Metrics Summary Bar -->
+            <div class="card-body" style="padding-bottom: 0;">
+              <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px;">
+                <div class="kpi-card" style="padding: 12px;">
+                  <div class="kpi-title" style="font-size: 11px;">Total Logs</div>
+                  <div class="kpi-value" id="diag-stat-total" style="font-size: 20px; color: var(--primary);">0</div>
+                </div>
+                <div class="kpi-card" style="padding: 12px;">
+                  <div class="kpi-title" style="font-size: 11px; color: #dc2626;">Errors &amp; Warnings</div>
+                  <div class="kpi-value" id="diag-stat-errors" style="font-size: 20px; color: #dc2626;">0</div>
+                </div>
+                <div class="kpi-card" style="padding: 12px;">
+                  <div class="kpi-title" style="font-size: 11px; color: #7c3aed;">Bill Traces</div>
+                  <div class="kpi-value" id="diag-stat-traces" style="font-size: 20px; color: #7c3aed;">0</div>
+                </div>
+                <div class="kpi-card" style="padding: 12px;">
+                  <div class="kpi-title" style="font-size: 11px; color: #16a34a;">Sync Events</div>
+                  <div class="kpi-value" id="diag-stat-sync" style="font-size: 20px; color: #16a34a;">0</div>
+                </div>
+              </div>
+
+              <!-- Filter and Search Bar -->
+              <div class="filter-bar" style="margin-bottom: 14px;">
+                <div class="search-input-wrapper" style="min-width: 220px; flex: 1;">
+                  <i data-lucide="search"></i>
+                  <input type="text" id="diag-search-input" class="search-input" placeholder="Search by action, message, invoice #, view..." oninput="window.dpvDiagnostics.searchQuery = this.value; window.dpvDiagnostics.renderDiagnosticsTable();">
+                </div>
+                <div class="filter-chips" id="diag-filter-chips">
+                  <button type="button" class="filter-chip active" data-diag-filter="all" onclick="window.dpvDiagnostics.setFilter('all', this)">All Logs</button>
+                  <button type="button" class="filter-chip" data-diag-filter="errors" onclick="window.dpvDiagnostics.setFilter('errors', this)" style="border-color: #fca5a5; color: #dc2626;">Errors &amp; Failures</button>
+                  <button type="button" class="filter-chip" data-diag-filter="lifecycle" onclick="window.dpvDiagnostics.setFilter('lifecycle', this)">Bill Traces</button>
+                  <button type="button" class="filter-chip" data-diag-filter="database" onclick="window.dpvDiagnostics.setFilter('database', this)">Database</button>
+                  <button type="button" class="filter-chip" data-diag-filter="sync" onclick="window.dpvDiagnostics.setFilter('sync', this)">Sync</button>
+                  <button type="button" class="filter-chip" data-diag-filter="pdf" onclick="window.dpvDiagnostics.setFilter('pdf', this)">PDF / Print</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Log Table -->
+            <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
+              <table class="data-table" id="diag-logs-table">
+                <thead>
+                  <tr>
+                    <th style="width: 110px;">Time</th>
+                    <th style="width: 170px;">Action</th>
+                    <th style="width: 95px;">Category</th>
+                    <th style="width: 130px;">Doc # / ID</th>
+                    <th>Message &amp; Findings</th>
+                    <th style="width: 75px; text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="diag-logs-tbody">
+                  <!-- Populated dynamically by DPVDiagnostics -->
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
@@ -1459,6 +1565,22 @@
     </div>
   </div>
 
+  <!-- MODAL: DIAGNOSTIC LOG DETAIL -->
+  <div id="modal-diagnostic-detail" class="modal-backdrop">
+    <div class="modal-dialog" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: #dc2626;"><i data-lucide="file-code"></i> Diagnostic Log Entry Details</h3>
+        <button type="button" class="modal-close-btn" onclick="window.dpvDiagnostics.closeDetailModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body" id="diag-detail-modal-body" style="max-height: 75vh; overflow-y: auto;">
+        <!-- Injected dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="window.dpvDiagnostics.closeDetailModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Offline Standalone Vendor Scripts -->
   <script src="js/vendor/lucide.min.js"></script>
   <script src="js/vendor/qrcode.min.js"></script>
@@ -1477,6 +1599,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
   <script src="js/app.js"></script>
+  <!-- Temporary Admin-Only Billing Diagnostic & Error Recorder -->
+  <script src="js/diagnostics.js"></script>
 
   <!-- Service Worker Registration for PWA with Auto-Update -->
   <script>

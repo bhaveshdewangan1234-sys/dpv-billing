@@ -114,14 +114,69 @@ class DPVStore {
         }
       ],
       terms: [
-        { id: "t_1", order: 1, title: "Booking & Payment", text: "बुकिंग तभी कन्फर्म मानी जाएगी जब तय की गई एडवांस राशि का भुगतान प्राप्त हो जाएगा। कार्यक्रम की तिथि एवं कार्य प्रगति के अनुसार तय किस्तों में भुगतान करना अनिवार्य होगा। शेष राशि फोटो/वीडियो की अंतिम डिलीवरी से पहले या डिलीवरी के समय पूर्ण करना अनिवार्य होगा। भुगतान में देरी होने पर फोटो/वीडियो की डिलीवरी भी उसी अनुसार आगे बढ़ सकती है।", active: true },
-        { id: "t_2", order: 2, title: "Delivery Schedule", text: "फोटो एवं वीडियो की अंतिम डिलीवरी फोटो सेलेक्शन की तिथि से 30–45 कार्य दिवस के भीतर की जाएगी। विशेष परिस्थितियों में समय बढ़ सकता है। अतिरिक्त एडिटिंग, एल्बम में बदलाव या अन्य विशेष कार्य होने पर डिलीवरी का समय बढ़ सकता है।", active: true },
-        { id: "t_3", order: 3, title: "Data Backup", text: "डिलीवरी के बाद सभी फोटो एवं वीडियो का बैकअप सुरक्षित रखना ग्राहक की जिम्मेदारी होगी। स्टूडियो डिलीवरी की तिथि से अधिकतम 90 दिनों तक ही डेटा सुरक्षित रखने का प्रयास करेगा। इसके बाद डेटा उपलब्ध होने की कोई गारंटी नहीं होगी।", active: true },
-        { id: "t_4", order: 4, title: "Album & Printing", text: "एल्बम डिजाइन की अंतिम स्वीकृति के बाद किसी भी प्रकार के बदलाव या री-प्रिंट के लिए अतिरिक्त शुल्क देय होगा।", active: true },
-        { id: "t_5", order: 5, title: "Cancellation", text: "बुकिंग रद्द होने की स्थिति में जमा की गई एडवांस राशि वापसी योग्य (Non-Refundable) नहीं होगी।", active: true },
-        { id: "t_6", order: 6, title: "Additional Work", text: "पैकेज में शामिल सेवाओं के अतिरिक्त फोटो, वीडियो, ड्रोन, रील, एडिटिंग, एल्बम पेज, प्रिंट या अन्य किसी भी अतिरिक्त कार्य के लिए अलग से शुल्क लिया जाएगा।", active: true },
-        { id: "t_7", order: 7, title: "Client Responsibility", text: "कार्यक्रम का सही समय, स्थान एवं आवश्यक जानकारी समय पर उपलब्ध कराना ग्राहक की जिम्मेदारी होगी। कार्यक्रम में देरी, समय परिवर्तन, गलत जानकारी या ग्राहक की ओर से हुई किसी भी असुविधा के कारण होने वाली देरी के लिए स्टूडियो जिम्मेदार नहीं होगा।", active: true },
-        { id: "t_8", order: 8, title: "Copyright", text: "सभी फोटो एवं वीडियो का कॉपीराइट स्टूडियो के पास सुरक्षित रहेगा। ग्राहक को व्यक्तिगत उपयोग का अधिकार होगा। किसी भी व्यावसायिक उपयोग, प्रकाशन या प्रचार हेतु स्टूडियो की पूर्व लिखित अनुमति आवश्यक होगी।", active: true }
+        {
+          id: "t_1",
+          order: 1,
+          title: "Booking & Payment",
+          text: "बुकिंग तभी कन्फर्म मानी जाएगी जब कुल पैकेज राशि का 50% एडवांस भुगतान प्राप्त हो जाएगा। कार्यक्रम की तिथि से 15–30 कार्य दिवस के भीतर फोटो सेलेक्शन के साथ कुल पैकेज राशि का 30% भुगतान करना अनिवार्य होगा। शेष 20% भुगतान फोटो/वीडियो की अंतिम डिलीवरी से पहले या डिलीवरी के समय करना अनिवार्य होगा। भुगतान में देरी होने पर फोटो/वीडियो की डिलीवरी भी उसी अनुसार आगे बढ़ सकती है।",
+          active: true
+        },
+        {
+          id: "t_2",
+          order: 2,
+          title: "भुगतान एवं फोटो डिलीवरी",
+          text: "भुगतान एवं फोटो डिलीवरी: ग्राहक द्वारा कुल निर्धारित राशि का कम से कम 50% भुगतान किए जाने के बाद ही स्टूडियो की ओर से फोटो/फोटो सामग्री उपलब्ध कराई जाएगी। 50% भुगतान प्राप्त होने से पहले किसी भी प्रकार की फोटो उपलब्ध या डिलीवर नहीं की जाएगी।",
+          active: true
+        },
+        {
+          id: "t_3",
+          order: 3,
+          title: "Delivery Schedule",
+          text: "फोटो एवं वीडियो की अंतिम डिलीवरी फोटो सेलेक्शन की तिथि से 30–45 कार्य दिवस के भीतर की जाएगी। विशेष परिस्थितियों में समय बढ़ सकता है। अतिरिक्त एडिटिंग, एल्बम में बदलाव या अन्य विशेष कार्य होने पर डिलीवरी का समय बढ़ सकता है।",
+          active: true
+        },
+        {
+          id: "t_4",
+          order: 4,
+          title: "Data Backup",
+          text: "डिलीवरी के बाद सभी फोटो एवं वीडियो का बैकअप सुरक्षित रखना ग्राहक की जिम्मेदारी होगी। स्टूडियो डिलीवरी की तिथि से अधिकतम 90 दिनों तक ही डेटा सुरक्षित रखने का प्रयास करेगा। इसके बाद डेटा उपलब्ध होने की कोई गारंटी नहीं होगी।",
+          active: true
+        },
+        {
+          id: "t_5",
+          order: 5,
+          title: "Album & Printing",
+          text: "एल्बम डिज़ाइन की अंतिम स्वीकृति के बाद किसी भी प्रकार के बदलाव या री-प्रिंट के लिए अतिरिक्त शुल्क देय होगा।",
+          active: true
+        },
+        {
+          id: "t_6",
+          order: 6,
+          title: "Cancellation",
+          text: "बुकिंग रद्द होने की स्थिति में जमा की गई एडवांस राशि वापसी योग्य (Non-Refundable) नहीं होगी।",
+          active: true
+        },
+        {
+          id: "t_7",
+          order: 7,
+          title: "Additional Work",
+          text: "पैकेज में शामिल सेवाओं के अतिरिक्त फोटो, वीडियो, ड्रोन, रील, एडिटिंग, एल्बम पेज, प्रिंट या अन्य किसी भी अतिरिक्त कार्य के लिए अलग से शुल्क लिया जाएगा।",
+          active: true
+        },
+        {
+          id: "t_8",
+          order: 8,
+          title: "Client Responsibility",
+          text: "कार्यक्रम का सही समय, स्थान एवं आवश्यक जानकारी समय पर उपलब्ध कराना ग्राहक की जिम्मेदारी होगी। कार्यक्रम में देरी, समय परिवर्तन, गलत जानकारी या ग्राहक की ओर से हुई किसी भी असुविधा के कारण होने वाली देरी के लिए स्टूडियो जिम्मेदार नहीं होगा।",
+          active: true
+        },
+        {
+          id: "t_9",
+          order: 9,
+          title: "Copyright",
+          text: "सभी फोटो एवं वीडियो का कॉपीराइट स्टूडियो के पास सुरक्षित रहेगा। ग्राहक को व्यक्तिगत उपयोग का अधिकार होगा। किसी भी व्यावसायिक उपयोग, प्रकाशन या प्रचार हेतु स्टूडियो की पूर्व लिखित अनुमति आवश्यक होगी।",
+          active: true
+        }
       ],
       customers: [
         {
@@ -153,328 +208,8 @@ class DPVStore {
           createdAt: new Date().toISOString()
         }
       ],
-      invoices: [
-        {
-          id: "inv_demo_1",
-          invoiceNumber: "DPV/2026/0001",
-          invoiceDate: "2026-12-12",
-          status: "finalized",
-          paymentStatus: "PARTIALLY PAID",
-          customer: {
-            id: "cust_demo_1",
-            name: "Aakash Dewangan",
-            phone: "9301614549",
-            whatsapp: "9301614549",
-            email: "aakash@gmail.com",
-            address: "Nehru Nagar",
-            city: "Balod",
-            state: "Chhattisgarh",
-            pincode: "491226"
-          },
-          event: {
-            type: "Wedding Shoot",
-            venue: "Balod",
-            notes: "Grand 3-day wedding celebration",
-            shootingDates: [
-              { date: "2026-12-12", title: "Churmaati", location: "Balod" },
-              { date: "2026-12-13", title: "Wedding Day & Barat", location: "Balod" },
-              { date: "2026-12-14", title: "Reception Ceremony", location: "Balod" }
-            ]
-          },
-          shootingDates: [
-            {
-              id: "sd_1",
-              dayNumber: 1,
-              date: "2026-12-12",
-              eventName: "Churmaati",
-              timings: "05:00 PM – 09:00 PM",
-              venue: "Nehru Nagar",
-              location: "Balod",
-              services: [
-                { name: "Traditional Photography", timings: "05:00 PM – 09:00 PM", notes: "Full ritual coverage" },
-                { name: "Candid Photography", timings: "06:00 PM – 09:00 PM", notes: "Family candid portraits" }
-              ],
-              notes: "Traditional rituals ceremony"
-            },
-            {
-              id: "sd_2",
-              dayNumber: 2,
-              date: "2026-12-13",
-              eventName: "Wedding Day & Barat",
-              timings: "10:00 AM – 10:00 PM",
-              venue: "Agrasen Bhawan",
-              location: "Balod",
-              services: [
-                { name: "Traditional Photography", timings: "10:00 AM – 10:00 PM", notes: "Full day coverage" },
-                { name: "Traditional Videography", timings: "10:00 AM – 10:00 PM", notes: "4K Video recording" },
-                { name: "Candid Photography", timings: "02:00 PM – 10:00 PM", notes: "Portraits & rituals" }
-              ],
-              notes: "Barat arrival scheduled for 11:30 AM"
-            },
-            {
-              id: "sd_3",
-              dayNumber: 3,
-              date: "2026-12-14",
-              eventName: "Reception Ceremony",
-              timings: "07:00 PM – 11:00 PM",
-              venue: "Grand Palace",
-              location: "Balod",
-              services: [
-                { name: "Traditional Photography", timings: "07:00 PM – 11:00 PM", notes: "Stage & guests" },
-                { name: "Cinematography Film", timings: "07:00 PM – 11:00 PM", notes: "Highlights & couple shoot" },
-                { name: "Drone Coverage", timings: "07:00 PM – 08:00 PM", notes: "Only for Reception — Grand Entry & Stage" }
-              ],
-              notes: "Drone coverage strictly 07:00 PM to 08:00 PM for couple grand entry"
-            }
-          ],
-          albums: [
-            {
-              id: "alb_1",
-              type: "NT Album",
-              sheets: "30 Sheets",
-              size: "12 × 18 inch",
-              qty: 1,
-              notes: "Premium leather briefcase bag included, metallic paper finish"
-            }
-          ],
-          deliverables: [
-            {
-              id: "del_1",
-              name: "Wedding Calendar",
-              type: "Desktop Tent Calendar 2027",
-              size: "8 × 6 inch",
-              qty: 1,
-              notes: "Customized with couple wedding portraits"
-            },
-            {
-              id: "del_2",
-              name: "Pen Drive (High-Speed USB)",
-              type: "Metal 64GB USB 3.0",
-              size: "64 GB",
-              qty: 1,
-              notes: "All 4K video files and edited high-resolution photos included"
-            },
-            {
-              id: "del_3",
-              name: "Photo Frame",
-              type: "Acrylic Glass Frame",
-              size: "12 × 18 inch",
-              qty: 1,
-              notes: "Couple stage portrait"
-            }
-          ],
-          items: [
-            { id: "item_1", name: "Wedding Photography", description: "Full traditional and candid coverage", qty: 1, rate: 25000, discount: 0, amount: 25000 },
-            { id: "item_2", name: "Wedding Videography", description: "Traditional 4K video recording with cinematic highlights", qty: 1, rate: 30000, discount: 0, amount: 30000 },
-            { id: "item_3", name: "Drone Coverage", description: "High-definition 4K aerial drone shots", qty: 1, rate: 10000, discount: 0, amount: 10000 }
-          ],
-          financials: {
-            rawSubtotal: 65000,
-            itemDiscountsTotal: 0,
-            overallDiscount: 0,
-            totalDiscount: 0,
-            taxableAmount: 65000,
-            enableGst: false,
-            gstRate: 0,
-            taxAmount: 0,
-            grandTotal: 65000,
-            totalPaid: 40000,
-            balanceDue: 25000
-          },
-          payments: [
-            { id: "pay_1", invoiceId: "inv_demo_1", type: "First Payment (Advance)", amount: 25000, date: "2026-11-01", method: "UPI", reference: "UPI: 9301614549@ybl" },
-            { id: "pay_2", invoiceId: "inv_demo_1", type: "Second Payment", amount: 15000, date: "2026-11-20", method: "Cash", reference: "Cash in hand" }
-          ],
-          paymentMethod: "UPI",
-          businessSnapshot: {
-            studioName: "Dewangan Photo & Videography",
-            shortName: "DPV",
-            ownerName: "Bhavesh Dewangan",
-            mobile: "+91 93016 14549",
-            altMobile: "+91 93016 14549",
-            whatsapp: "9301614549",
-            address: "Shivpuri, Jamul, Durg (C.G.)",
-            website: "www.dewanganphotoandvideography.in",
-            instagram: "dewangan_photo_and_videography",
-            upiId: "9301614549@ybl",
-            headerTagline: "CAPTURE YOUR SPECIAL MOMENTS",
-            headerMemoriesTitle: "Memories",
-            headerMemoriesSub: "THAT LAST FOREVER",
-            headerServices1: "Wedding | Pre-Wedding | Engagement",
-            headerServices2: "Birthday | Anniversary | Maternity Shoot",
-            headerServices3: "Album Design & Printing | Photo Printing",
-            headerQuote: "\"Stories Through Our Lens\"",
-            footerTagline: "Capture Your Moments",
-            footerTaglineTop: "Capture",
-            footerTaglineBottom: "Your Moments",
-            currencySymbol: "₹"
-          },
-          termsSnapshot: [
-            { id: "t_1", order: 1, title: "Booking & Payment", text: "बुकिंग तभी कन्फर्म मानी जाएगी जब तय की गई एडवांस राशि का भुगतान प्राप्त हो जाएगा। कार्यक्रम की तिथि एवं कार्य प्रगति के अनुसार तय किस्तों में भुगतान करना अनिवार्य होगा। शेष राशि फोटो/वीडियो की अंतिम डिलीवरी से पहले या डिलीवरी के समय पूर्ण करना अनिवार्य होगा। भुगतान में देरी होने पर फोटो/वीडियो की डिलीवरी भी उसी अनुसार आगे बढ़ सकती है।" },
-            { id: "t_2", order: 2, title: "Delivery Schedule", text: "फोटो एवं वीडियो की अंतिम डिलीवरी फोटो सेलेक्शन की तिथि से 30–45 कार्य दिवस के भीतर की जाएगी। विशेष परिस्थितियों में समय बढ़ सकता है। अतिरिक्त एडिटिंग, एल्बम में बदलाव या अन्य विशेष कार्य होने पर डिलीवरी का समय बढ़ सकता है।" },
-            { id: "t_3", order: 3, title: "Data Backup", text: "डिलीवरी के बाद सभी फोटो एवं वीडियो का बैकअप सुरक्षित रखना ग्राहक की जिम्मेदारी होगी। स्टूडियो डिलीवरी की तिथि से अधिकतम 90 दिनों तक ही डेटा सुरक्षित रखने का प्रयास करेगा। इसके बाद डेटा उपलब्ध होने की कोई गारंटी नहीं होगी।" },
-            { id: "t_4", order: 4, title: "Album & Printing", text: "एल्बम डिजाइन की अंतिम स्वीकृति के बाद किसी भी प्रकार के बदलाव या री-प्रिंट के लिए अतिरिक्त शुल्क देय होगा।" },
-            { id: "t_5", order: 5, title: "Cancellation", text: "बुकिंग रद्द होने की स्थिति में जमा की गई एडवांस राशि वापसी योग्य (Non-Refundable) नहीं होगी।" },
-            { id: "t_6", order: 6, title: "Additional Work", text: "पैकेज में शामिल सेवाओं के अतिरिक्त फोटो, वीडियो, ड्रोन, रील, एडिटिंग, एल्बम पेज, प्रिंट या अन्य किसी भी अतिरिक्त कार्य के लिए अलग से शुल्क लिया जाएगा।" },
-            { id: "t_7", order: 7, title: "Client Responsibility", text: "कार्यक्रम का सही समय, स्थान एवं आवश्यक जानकारी समय पर उपलब्ध कराना ग्राहक की जिम्मेदारी होगी। कार्यक्रम में देरी, समय परिवर्तन, गलत जानकारी या ग्राहक की ओर से हुई किसी भी असुविधा के कारण होने वाली देरी के लिए स्टूडियो जिम्मेदार नहीं होगा।" },
-            { id: "t_8", order: 8, title: "Copyright", text: "सभी फोटो एवं वीडियो का कॉपीराइट स्टूडियो के पास सुरक्षित रहेगा। ग्राहक को व्यक्तिगत उपयोग का अधिकार होगा। किसी भी व्यावसायिक उपयोग, प्रकाशन या प्रचार हेतु स्टूडियो की पूर्व लिखित अनुमति आवश्यक होगी।" }
-          ],
-          createdAt: "2026-11-01T10:00:00.000Z",
-          updatedAt: "2026-11-20T12:00:00.000Z"
-        },
-        {
-          id: "quot_demo_1",
-          documentType: "quotation",
-          invoiceNumber: "DPV/Q/2026/0001",
-          invoiceDate: "2026-11-25",
-          status: "finalized",
-          paymentStatus: "PENDING",
-          customer: {
-            id: "cust_demo_2",
-            name: "Raj Kumar Dewangan",
-            relationName: "S/o Mohan Dewangan",
-            phone: "9981885793",
-            altPhone: "9301614549",
-            whatsapp: "9981885793",
-            email: "rajdewangan4700@gmail.com",
-            address: "Shivpuri, Jamul",
-            city: "Bhilai",
-            state: "Chhattisgarh",
-            pincode: "490024"
-          },
-          event: {
-            type: "Pre-Wedding & Wedding",
-            venue: "Bhilai Grand Resort",
-            notes: "Complete 2-day wedding quotation package",
-            shootingDates: [
-              { date: "2026-12-24", title: "Haldi & Mehendi", location: "Bhilai" },
-              { date: "2026-12-25", title: "Wedding Ceremony", location: "Bhilai" }
-            ]
-          },
-          shootingDates: [
-            {
-              id: "sd_q1",
-              dayNumber: 1,
-              date: "2026-12-24",
-              eventName: "Haldi & Mehendi",
-              timings: "03:00 PM – 08:00 PM",
-              venue: "Bhilai Grand Resort",
-              location: "Bhilai",
-              services: [
-                { name: "Traditional Photography", timings: "03:00 PM – 08:00 PM", notes: "All rituals" },
-                { name: "Candid Photography", timings: "04:00 PM – 08:00 PM", notes: "Candid expressions" }
-              ],
-              notes: "Outdoor poolside lawn"
-            },
-            {
-              id: "sd_q2",
-              dayNumber: 2,
-              date: "2026-12-25",
-              eventName: "Wedding & Reception",
-              timings: "06:00 PM – 11:30 PM",
-              venue: "Bhilai Grand Resort - Royal Hall",
-              location: "Bhilai",
-              services: [
-                { name: "Traditional Photography", timings: "06:00 PM – 11:30 PM", notes: "Stage & ceremony" },
-                { name: "Traditional Videography", timings: "06:00 PM – 11:30 PM", notes: "4K Multi-camera" },
-                { name: "Drone Coverage", timings: "07:30 PM – 08:30 PM", notes: "Only for Reception — Barat & Entry" },
-                { name: "LED Wall", timings: "07:00 PM – 11:00 PM", notes: "8 × 12 ft Live display" }
-              ],
-              notes: "Drone coverage timing 07:30 PM to 08:30 PM"
-            }
-          ],
-          albums: [
-            {
-              id: "alb_q1",
-              type: "Premium Canvera Album",
-              sheets: "35 Sheets",
-              size: "12 × 18 inch",
-              qty: 1,
-              notes: "Luxury velvet box with personalized photo engraving"
-            }
-          ],
-          deliverables: [
-            {
-              id: "del_q1",
-              name: "Wedding Calendar",
-              type: "Custom Desk Calendar",
-              size: "Desktop",
-              qty: 2,
-              notes: "One for Bride, one for Groom family"
-            },
-            {
-              id: "del_q2",
-              name: "Photo Frame",
-              type: "Designer Wooden Carved Frame",
-              size: "16 × 24 inch",
-              qty: 1,
-              notes: "Wall mounting frame for master bedroom"
-            },
-            {
-              id: "del_q3",
-              name: "Pen Drive",
-              type: "Wooden Engraved USB 3.0",
-              size: "64 GB",
-              qty: 1,
-              notes: "Master high-resolution files"
-            }
-          ],
-          items: [
-            { id: "qitem_1", name: "Cinematic Pre-Wedding Package", description: "Full day 4K video shoot + teaser + drone", qty: 1, rate: 35000, discount: 0, amount: 35000 },
-            { id: "qitem_2", name: "Wedding Photography & 4K Videography", description: "2 Photographers + 2 Videographers with LED setup", qty: 1, rate: 45000, discount: 0, amount: 45000 },
-            { id: "qitem_3", name: "Premium Canvera Photo Album", description: "35 sheets luxury velvet finish with leather bag", qty: 1, rate: 12000, discount: 0, amount: 12000 }
-          ],
-          financials: {
-            rawSubtotal: 92000,
-            itemDiscountsTotal: 0,
-            overallDiscount: 7000,
-            totalDiscount: 7000,
-            taxableAmount: 85000,
-            enableGst: false,
-            gstRate: 0,
-            taxAmount: 0,
-            grandTotal: 85000,
-            totalPaid: 0,
-            balanceDue: 85000
-          },
-          payments: [],
-          paymentMethod: "UPI",
-          businessSnapshot: {
-            studioName: "Dewangan Photo & Videography",
-            shortName: "DPV",
-            ownerName: "Bhavesh Dewangan",
-            mobile: "+91 93016 14549",
-            altMobile: "+91 93016 14549",
-            whatsapp: "9301614549",
-            address: "Shivpuri, Jamul, Durg (C.G.)",
-            website: "www.dewanganphotoandvideography.in",
-            instagram: "dewangan_photo_and_videography",
-            upiId: "9301614549@ybl",
-            headerTagline: "CAPTURE YOUR SPECIAL MOMENTS",
-            headerMemoriesTitle: "Memories",
-            headerMemoriesSub: "THAT LAST FOREVER",
-            headerServices1: "Wedding | Pre-Wedding | Engagement",
-            headerServices2: "Birthday | Anniversary | Maternity Shoot",
-            headerServices3: "Album Design & Printing | Photo Printing",
-            headerQuote: "\"Stories Through Our Lens\"",
-            footerTagline: "Capture Your Moments",
-            footerTaglineTop: "Capture",
-            footerTaglineBottom: "Your Moments",
-            currencySymbol: "₹"
-          },
-          termsSnapshot: [
-            { id: "t_1", order: 1, title: "Booking & Payment", text: "बुकिंग तभी कन्फर्म मानी जाएगी जब तय की गई एडवांस राशि का भुगतान प्राप्त हो जाएगा। कार्यक्रम की तिथि एवं कार्य प्रगति के अनुसार तय किस्तों में भुगतान करना अनिवार्य होगा। शेष राशि फोटो/वीडियो की अंतिम डिलीवरी से पहले या डिलीवरी के समय पूर्ण करना अनिवार्य होगा।" },
-            { id: "t_2", order: 2, title: "Delivery Schedule", text: "फोटो एवं वीडियो की अंतिम डिलीवरी फोटो सेलेक्शन की तिथि से 30–45 कार्य दिवस के भीतर की जाएगी। विशेष परिस्थितियों में समय बढ़ सकता है।" },
-            { id: "t_5", order: 5, title: "Cancellation", text: "बुकिंग रद्द होने की स्थिति में जमा की गई एडवांस राशि वापसी योग्य (Non-Refundable) नहीं होगी।" }
-          ],
-          createdAt: "2026-11-25T11:00:00.000Z",
-          updatedAt: "2026-11-25T11:00:00.000Z"
-        }
-      ],
-      payments: [
-        { id: "pay_1", invoiceId: "inv_demo_1", type: "First Payment (Advance)", amount: 25000, date: "2026-11-01", method: "UPI", reference: "UPI: 9301614549@ybl" },
-        { id: "pay_2", invoiceId: "inv_demo_1", type: "Second Payment", amount: 15000, date: "2026-11-20", method: "Cash", reference: "Cash in hand" }
-      ],
+      invoices: [],
+      payments: [],
       users: [
         {
           id: "user_admin_1",
@@ -488,7 +223,7 @@ class DPVStore {
         }
       ],
       auditLogs: [],
-      deletedInvoiceIds: []
+      deletedInvoiceIds: ["inv_demo_1", "quot_demo_1"]
     };
   }
 
@@ -501,6 +236,13 @@ class DPVStore {
         if (!Array.isArray(this.memoryCache.deletedInvoiceIds)) {
           this.memoryCache.deletedInvoiceIds = [];
         }
+        // Permanently tombstone old demo invoices
+        ['inv_demo_1', 'quot_demo_1'].forEach(dId => {
+          if (!this.memoryCache.deletedInvoiceIds.includes(dId)) {
+            this.memoryCache.deletedInvoiceIds.push(dId);
+          }
+        });
+
         // Ensure all required default collections exist
         const defaults = this.getDefaultState();
         for (const key of Object.keys(defaults)) {
@@ -508,10 +250,24 @@ class DPVStore {
             this.memoryCache[key] = defaults[key];
           }
         }
-        if (!this.memoryCache.invoices) {
-          this.memoryCache.invoices = defaults.invoices;
-          this.memoryCache.payments = defaults.payments;
+        if (!Array.isArray(this.memoryCache.invoices)) {
+          this.memoryCache.invoices = [];
         }
+        if (!Array.isArray(this.memoryCache.payments)) {
+          this.memoryCache.payments = [];
+        }
+        if (!Array.isArray(this.memoryCache.customers)) {
+          this.memoryCache.customers = [];
+        }
+
+        // PURGE any invoice or payment that was marked as deleted
+        const initialCount = this.memoryCache.invoices.length;
+        this.memoryCache.invoices = this.memoryCache.invoices.filter(inv => !this.memoryCache.deletedInvoiceIds.includes(inv.id));
+        this.memoryCache.payments = this.memoryCache.payments.filter(p => !this.memoryCache.deletedInvoiceIds.includes(p.invoiceId));
+        if (this.memoryCache.invoices.length !== initialCount) {
+          this.persist();
+        }
+
         if (this.memoryCache.settings) {
           this.memoryCache.settings.mobile = defaults.settings.mobile;
           this.memoryCache.settings.altMobile = defaults.settings.altMobile;
@@ -541,24 +297,6 @@ class DPVStore {
             if (!inv.documentType) {
               inv.documentType = (inv.invoiceNumber && inv.invoiceNumber.includes('/Q')) ? 'quotation' : 'invoice';
               storeNeedsSave = true;
-            }
-            if (inv.id === 'inv_demo_1' && (!inv.albums || !inv.deliverables || (inv.shootingDates && !inv.shootingDates[0]?.timings))) {
-              const defDemo = defaults.invoices.find(d => d.id === 'inv_demo_1');
-              if (defDemo) {
-                inv.albums = defDemo.albums;
-                inv.deliverables = defDemo.deliverables;
-                inv.shootingDates = defDemo.shootingDates;
-                storeNeedsSave = true;
-              }
-            }
-            if (inv.id === 'quot_demo_1' && (!inv.albums || !inv.deliverables || (inv.shootingDates && !inv.shootingDates[0]?.timings))) {
-              const defDemo = defaults.invoices.find(d => d.id === 'quot_demo_1');
-              if (defDemo) {
-                inv.albums = defDemo.albums;
-                inv.deliverables = defDemo.deliverables;
-                inv.shootingDates = defDemo.shootingDates;
-                storeNeedsSave = true;
-              }
             }
             // Strip any legacy percentages from invoice payments
             if (Array.isArray(inv.payments)) {
@@ -610,13 +348,16 @@ class DPVStore {
             });
           }
 
-          // Clean legacy percentages in root terms
-          if (Array.isArray(this.memoryCache.terms)) {
-            const t1 = this.memoryCache.terms.find(t => t.id === 't_1');
-            if (t1 && t1.text && t1.text.includes('50%')) {
-              t1.text = "बुकिंग तभी कन्फर्म मानी जाएगी जब तय की गई एडवांस राशि का भुगतान प्राप्त हो जाएगा। कार्यक्रम की तिथि एवं कार्य प्रगति के अनुसार तय किस्तों में भुगतान करना अनिवार्य होगा। शेष राशि फोटो/वीडियो की अंतिम डिलीवरी से पहले या डिलीवरी के समय पूर्ण करना अनिवार्य होगा। भुगतान में देरी होने पर फोटो/वीडियो की डिलीवरी भी उसी अनुसार आगे बढ़ सकती है।";
-              storeNeedsSave = true;
-            }
+          // Synchronize terms to the 9 official studio policies
+          const currentTerms = this.memoryCache.terms;
+          const hasOfficial9 = Array.isArray(currentTerms) &&
+            currentTerms.length === 9 &&
+            currentTerms.some(t => t.text && t.text.includes('कम से कम 50% भुगतान')) &&
+            currentTerms.some(t => t.text && t.text.includes('50% एडवांस भुगतान'));
+
+          if (!hasOfficial9) {
+            this.memoryCache.terms = this.getDefaultState().terms;
+            storeNeedsSave = true;
           }
 
           if (storeNeedsSave) {
@@ -687,9 +428,105 @@ class DPVStore {
   }
 
   // Remote Cloud Sync Methods (Multi-Device Live Sync)
+  syncFromCloud(cloudInvoices = [], isFromCache = false) {
+    if (!Array.isArray(this.memoryCache.deletedInvoiceIds)) {
+      this.memoryCache.deletedInvoiceIds = [];
+    }
+    const deletedSet = new Set(this.memoryCache.deletedInvoiceIds);
+
+    // 1. Filter valid cloud invoices (excluding tombstoned / demo IDs)
+    const validCloudInvoices = [];
+    const remoteToDelete = [];
+
+    (cloudInvoices || []).forEach(remoteInv => {
+      if (!remoteInv || !remoteInv.id) return;
+      if (deletedSet.has(remoteInv.id) || remoteInv.id === 'inv_demo_1' || remoteInv.id === 'quot_demo_1') {
+        remoteToDelete.push(remoteInv.id);
+        return;
+      }
+      validCloudInvoices.push(remoteInv);
+    });
+
+    if (remoteToDelete.length > 0 && window.dpvFirebaseSync) {
+      remoteToDelete.forEach(id => window.dpvFirebaseSync.deleteInvoice(id));
+    }
+
+    // If cloud snapshot is empty: Keep ALL valid non-deleted local invoices (prevent data loss)
+    if (cloudInvoices.length === 0) {
+      const validLocals = (this.memoryCache.invoices || []).filter(inv =>
+        inv && inv.id && !deletedSet.has(inv.id) && inv.id !== 'inv_demo_1' && inv.id !== 'quot_demo_1'
+      );
+      this.memoryCache.invoices = validLocals;
+      const validLocalIds = new Set(validLocals.map(i => i.id));
+      this.memoryCache.payments = (this.memoryCache.payments || []).filter(p => !p.invoiceId || validLocalIds.has(p.invoiceId));
+      this.persist();
+      this.emit('invoices_updated', this.memoryCache.invoices);
+      if (validLocals.length > 0 && window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+        validLocals.forEach(inv => window.dpvFirebaseSync.syncInvoice(inv));
+      }
+      return;
+    }
+
+    // 2. Cloud has documents: Keep valid cloud invoices + any valid local invoices not yet in cloud
+    const cloudIds = new Set(validCloudInvoices.map(c => c.id));
+    const unsyncedLocals = (this.memoryCache.invoices || []).filter(inv =>
+      inv && inv.id && !deletedSet.has(inv.id) && inv.id !== 'inv_demo_1' && inv.id !== 'quot_demo_1' && !cloudIds.has(inv.id)
+    );
+
+    if (unsyncedLocals.length > 0 && window.dpvFirebaseSync && window.dpvFirebaseSync.isConnected) {
+      unsyncedLocals.forEach(inv => {
+        window.dpvFirebaseSync.syncInvoice(inv);
+      });
+    }
+
+    // 3. Combine cloud invoices + unsynced locals
+    const merged = [...validCloudInvoices, ...unsyncedLocals];
+    merged.sort((a, b) => {
+      const tA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const tB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return tB - tA;
+    });
+
+    this.memoryCache.invoices = merged;
+    const validIds = new Set(merged.map(i => i.id));
+    this.memoryCache.payments = (this.memoryCache.payments || []).filter(p => !p.invoiceId || validIds.has(p.invoiceId));
+
+    this.persist();
+    this.emit('invoices_updated', this.memoryCache.invoices);
+  }
+
+  mergeRemoteTombstones(deletedIds = []) {
+    if (!Array.isArray(deletedIds) || deletedIds.length === 0) return;
+    if (!Array.isArray(this.memoryCache.deletedInvoiceIds)) {
+      this.memoryCache.deletedInvoiceIds = [];
+    }
+    let changed = false;
+    deletedIds.forEach(id => {
+      if (id && !this.memoryCache.deletedInvoiceIds.includes(id)) {
+        this.memoryCache.deletedInvoiceIds.push(id);
+        changed = true;
+      }
+    });
+
+    const tombstoneSet = new Set(this.memoryCache.deletedInvoiceIds);
+    const countBefore = (this.memoryCache.invoices || []).length;
+    this.memoryCache.invoices = (this.memoryCache.invoices || []).filter(inv => !tombstoneSet.has(inv.id));
+    this.memoryCache.payments = (this.memoryCache.payments || []).filter(p => !tombstoneSet.has(p.invoiceId));
+
+    if (changed || this.memoryCache.invoices.length !== countBefore) {
+      this.persist();
+      this.emit('invoices_updated', this.memoryCache.invoices);
+    }
+  }
+
+  isInvoiceDeleted(id) {
+    if (!id) return false;
+    return Array.isArray(this.memoryCache.deletedInvoiceIds) && this.memoryCache.deletedInvoiceIds.includes(id);
+  }
+
   mergeRemoteInvoice(remoteInv) {
     if (!remoteInv || !remoteInv.id) return false;
-    if (Array.isArray(this.memoryCache.deletedInvoiceIds) && this.memoryCache.deletedInvoiceIds.includes(remoteInv.id)) {
+    if (this.isInvoiceDeleted(remoteInv.id)) {
       if (window.dpvFirebaseSync) {
         window.dpvFirebaseSync.deleteInvoice(remoteInv.id);
       }
@@ -782,6 +619,15 @@ class DPVStore {
   }
 
   saveInvoice(invoiceData, allowPaymentUpdate = false) {
+    if (!invoiceData) return null;
+    if (!invoiceData.id) {
+      invoiceData.id = 'inv_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    }
+    // If invoice was previously deleted, un-tombstone since user is explicitly saving it
+    if (Array.isArray(this.memoryCache.deletedInvoiceIds)) {
+      this.memoryCache.deletedInvoiceIds = this.memoryCache.deletedInvoiceIds.filter(dId => dId !== invoiceData.id);
+    }
+
     const list = this.memoryCache.invoices || [];
     const index = list.findIndex(inv => inv.id === invoiceData.id);
     
@@ -828,21 +674,25 @@ class DPVStore {
   }
 
   deleteInvoice(id) {
-    const list = this.memoryCache.invoices || [];
-    const inv = list.find(i => i.id === id);
-    if (!inv) return false;
-    
-    this.memoryCache.invoices = list.filter(i => i.id !== id);
-    // Also remove associated payments
-    this.memoryCache.payments = (this.memoryCache.payments || []).filter(p => p.invoiceId !== id);
+    if (!id) return false;
     if (!Array.isArray(this.memoryCache.deletedInvoiceIds)) {
       this.memoryCache.deletedInvoiceIds = [];
     }
     if (!this.memoryCache.deletedInvoiceIds.includes(id)) {
       this.memoryCache.deletedInvoiceIds.push(id);
     }
+
+    const list = this.memoryCache.invoices || [];
+    const inv = list.find(i => i.id === id);
+    
+    this.memoryCache.invoices = list.filter(i => i.id !== id);
+    // Also remove associated payments
+    this.memoryCache.payments = (this.memoryCache.payments || []).filter(p => p.invoiceId !== id);
+
     this.persist();
-    this.logAudit('INVOICE_DELETED', `Deleted invoice ${inv.invoiceNumber}`);
+    if (inv) {
+      this.logAudit('INVOICE_DELETED', `Deleted invoice ${inv.invoiceNumber}`);
+    }
     this.emit('invoices_updated', this.memoryCache.invoices);
     if (window.dpvFirebaseSync) {
       window.dpvFirebaseSync.deleteInvoice(id);
@@ -1140,6 +990,10 @@ class DPVStore {
   // Terms & Conditions CRUD
   getTerms() {
     return [...(this.memoryCache.terms || [])].sort((a,b) => (a.order || 0) - (b.order || 0));
+  }
+
+  getTermById(id) {
+    return (this.memoryCache.terms || []).find(t => t.id === id) || null;
   }
 
   saveTerm(term) {

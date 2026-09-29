@@ -60,9 +60,6 @@ class DPVFirebaseSync {
       // Start listening to real-time changes from other devices
       this.setupRealtimeListeners();
 
-      // Check if cloud has records; if totally empty and we have local data, do initial push
-      this.checkAndPerformInitialPush();
-
       return true;
     } catch (err) {
       console.warn("[DPVFirebaseSync] Cloud connection pending or Firestore not yet started:", err.message);
@@ -79,27 +76,41 @@ class DPVFirebaseSync {
     if (!this.isConnected || !this.db) return;
     this.cleanupListeners();
 
-    // 1. INVOICES & QUOTATIONS REAL-TIME LISTENER
+    // 1. INVOICES & QUOTATIONS REAL-TIME LISTENER (Reconcile full collection: Database is Single Source of Truth)
     try {
       const unsubInvoices = this.db.collection('dpv_invoices').onSnapshot((snapshot) => {
         if (!window.dpvStore) return;
-        snapshot.docChanges().forEach((change) => {
-          const inv = change.doc.data();
-          if (change.type === 'added' || change.type === 'modified') {
-            const isNew = window.dpvStore.mergeRemoteInvoice(inv);
-            if (isNew && window.dpvApp && typeof window.dpvApp.showToast === 'function') {
-              window.dpvApp.showToast(`Cloud Sync: Invoice ${inv.invoiceNumber || ''} updated!`, 'info');
-            }
-          } else if (change.type === 'removed') {
-            window.dpvStore.removeRemoteInvoice(change.doc.id);
+        const cloudInvoices = [];
+        snapshot.forEach((doc) => {
+          const inv = doc.data();
+          if (inv && inv.id) {
+            cloudInvoices.push(inv);
           }
         });
+        window.dpvStore.syncFromCloud(cloudInvoices, snapshot.metadata && snapshot.metadata.fromCache);
       }, (err) => {
         console.warn("[DPVFirebaseSync] Invoices listener note:", err.message);
       });
       this.unsubscribeListeners.push(unsubInvoices);
     } catch (e) {
       console.warn("[DPVFirebaseSync] Invoices listener setup:", e);
+    }
+
+    // 1b. DELETIONS / TOMBSTONES REAL-TIME LISTENER (Permanent cross-device deletion)
+    try {
+      const unsubDeletions = this.db.collection('dpv_deletions').onSnapshot((snapshot) => {
+        if (!window.dpvStore) return;
+        const deletedIds = [];
+        snapshot.forEach((doc) => {
+          deletedIds.push(doc.id);
+        });
+        window.dpvStore.mergeRemoteTombstones(deletedIds);
+      }, (err) => {
+        console.warn("[DPVFirebaseSync] Deletions listener note:", err.message);
+      });
+      this.unsubscribeListeners.push(unsubDeletions);
+    } catch (e) {
+      console.warn("[DPVFirebaseSync] Deletions listener setup:", e);
     }
 
     // 2. CUSTOMERS REAL-TIME LISTENER
@@ -169,8 +180,26 @@ class DPVFirebaseSync {
   async syncInvoice(invoice) {
     if (!this.db && typeof firebase !== 'undefined') await this.init();
     if (!this.db || !invoice || !invoice.id) return false;
+    // Reject sync if invoice was deleted
+    if (window.dpvStore && window.dpvStore.isInvoiceDeleted(invoice.id)) {
+      console.log(`[DPVFirebaseSync] Not syncing deleted invoice: ${invoice.id}`);
+      return false;
+    }
     try {
-      await this.db.collection('dpv_invoices').doc(invoice.id).set(invoice, { merge: true });
+      const cleanInvoice = JSON.parse(JSON.stringify(invoice));
+      delete cleanInvoice._pendingSync;
+      await this.db.collection('dpv_invoices').doc(cleanInvoice.id).set(cleanInvoice, { merge: true });
+      // If there was an old tombstone in dpv_deletions, remove it
+      try {
+        await this.db.collection('dpv_deletions').doc(cleanInvoice.id).delete();
+      } catch (delErr) {}
+      if (window.dpvStore) {
+        const local = window.dpvStore.getInvoiceById(invoice.id);
+        if (local && local._pendingSync) {
+          local._pendingSync = false;
+          window.dpvStore.persist();
+        }
+      }
       return true;
     } catch (e) {
       console.error("[DPVFirebaseSync] Error syncing invoice:", e);
@@ -179,13 +208,29 @@ class DPVFirebaseSync {
   }
 
   /**
-   * Delete an invoice from Firestore
+   * Delete an invoice from Firestore and write permanent tombstone
    */
   async deleteInvoice(invoiceId) {
     if (!this.db && typeof firebase !== 'undefined') await this.init();
     if (!this.db || !invoiceId) return false;
     try {
+      // 1. Delete from dpv_invoices
       await this.db.collection('dpv_invoices').doc(invoiceId).delete();
+      // 2. Write tombstone to dpv_deletions
+      await this.db.collection('dpv_deletions').doc(invoiceId).set({
+        id: invoiceId,
+        deletedAt: new Date().toISOString(),
+        type: 'invoice'
+      }, { merge: true });
+      // 3. Delete associated payments
+      try {
+        const paySnap = await this.db.collection('dpv_payments').where('invoiceId', '==', invoiceId).get();
+        if (!paySnap.empty) {
+          const batch = this.db.batch();
+          paySnap.forEach(doc => batch.delete(doc.ref));
+          await batch.commit();
+        }
+      } catch (pErr) {}
       return true;
     } catch (e) {
       console.error("[DPVFirebaseSync] Error deleting invoice:", e);
@@ -200,7 +245,8 @@ class DPVFirebaseSync {
     if (!this.db && typeof firebase !== 'undefined') await this.init();
     if (!this.db || !customer || !customer.id) return false;
     try {
-      await this.db.collection('dpv_customers').doc(customer.id).set(customer, { merge: true });
+      const cleanCustomer = JSON.parse(JSON.stringify(customer));
+      await this.db.collection('dpv_customers').doc(cleanCustomer.id).set(cleanCustomer, { merge: true });
       return true;
     } catch (e) {
       console.error("[DPVFirebaseSync] Error syncing customer:", e);
@@ -230,7 +276,8 @@ class DPVFirebaseSync {
     if (!this.db && typeof firebase !== 'undefined') await this.init();
     if (!this.db || !payment || !payment.id) return false;
     try {
-      await this.db.collection('dpv_payments').doc(payment.id).set(payment, { merge: true });
+      const cleanPayment = JSON.parse(JSON.stringify(payment));
+      await this.db.collection('dpv_payments').doc(cleanPayment.id).set(cleanPayment, { merge: true });
       return true;
     } catch (e) {
       console.error("[DPVFirebaseSync] Error syncing payment:", e);
@@ -260,28 +307,12 @@ class DPVFirebaseSync {
     if (!this.db && typeof firebase !== 'undefined') await this.init();
     if (!this.db || !settings) return false;
     try {
-      await this.db.collection('dpv_settings').doc('studio_settings').set(settings, { merge: true });
+      const cleanSettings = JSON.parse(JSON.stringify(settings));
+      await this.db.collection('dpv_settings').doc('studio_settings').set(cleanSettings, { merge: true });
       return true;
     } catch (e) {
       console.error("[DPVFirebaseSync] Error syncing settings:", e);
       return false;
-    }
-  }
-
-  /**
-   * Check if Cloud database has existing invoices. If totally empty, upload all local data.
-   */
-  async checkAndPerformInitialPush() {
-    if (this.hasPerformedInitialSync || !this.isConnected || !this.db || !window.dpvStore) return;
-    try {
-      const snap = await this.db.collection('dpv_invoices').limit(1).get();
-      if (snap.empty) {
-        console.log("[DPVFirebaseSync] Cloud collection is empty. Performing initial data population...");
-        await this.uploadAllDataToCloud(true);
-      }
-      this.hasPerformedInitialSync = true;
-    } catch (e) {
-      console.warn("[DPVFirebaseSync] Initial check note:", e.message);
     }
   }
 
@@ -296,9 +327,12 @@ class DPVFirebaseSync {
     }
 
     try {
-      const invoices = window.dpvStore.getInvoices();
+      const invoices = window.dpvStore.getInvoices().filter(inv =>
+        inv && inv.id && !window.dpvStore.isInvoiceDeleted(inv.id) && inv.id !== 'inv_demo_1' && inv.id !== 'quot_demo_1'
+      );
       const customers = window.dpvStore.getCustomers();
-      const payments = window.dpvStore.getPayments();
+      const validInvIds = new Set(invoices.map(i => i.id));
+      const payments = window.dpvStore.getPayments().filter(p => !p.invoiceId || validInvIds.has(p.invoiceId));
       const settings = window.dpvStore.getSettings();
 
       const batch = this.db.batch();

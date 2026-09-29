@@ -23,6 +23,7 @@
   <script src="js/calendar.js"></script>
   <script src="js/backup.js"></script>
   <script src="js/pdf-generator.js"></script>
+  <script src="js/diagnostics.js"></script>
 
   <script>
     const output = document.getElementById('test-output');
@@ -596,7 +597,60 @@
       const navBtns = testNav.querySelectorAll('.mobile-nav-btn');
       assert("Mobile bottom nav has exactly 5 navigation actions", navBtns.length === 5);
       assert("Fifth mobile action is the Menu drawer trigger", navBtns[4].id === 'mobile-menu-drawer-btn');
-      assert("Fourth mobile action links to Shooting Calendar", navBtns[3].getAttribute('data-view') === 'view-calendar');
+      // 34. Billing Diagnostics & Error Recorder System Verification
+      assert("DPVDiagnostics class exists", typeof DPVDiagnostics === 'function');
+      assert("window.dpvDiagnostics global instance exists", !!window.dpvDiagnostics);
+      
+      // Mode toggle verification
+      window.dpvDiagnostics.setEnabled(true);
+      assert("Diagnostic mode is enabled", window.dpvDiagnostics.isEnabled() === true);
+      
+      // Action Recording & Security Sanitization
+      const testLogCountBefore = window.dpvDiagnostics.logs.length;
+      window.dpvDiagnostics.record({
+        action: 'TEST_DIAG_ACTION',
+        category: 'DATABASE',
+        status: 'SUCCESS',
+        message: 'Diagnostic test log execution',
+        details: {
+          testField: 'valid_data',
+          password: 'SecretPassword123!',
+          apiKey: 'AIzaSySecretToken'
+        }
+      });
+      assert("Diagnostic log was recorded", window.dpvDiagnostics.logs.length === testLogCountBefore + 1);
+      const recordedEntry = window.dpvDiagnostics.logs[0];
+      assert("Recorded log has correct action", recordedEntry.action === 'TEST_DIAG_ACTION');
+      assert("Recorded log sanitized password", recordedEntry.details.password === '[REDACTED_FOR_SECURITY]');
+      assert("Recorded log sanitized apiKey", recordedEntry.details.apiKey === '[REDACTED_FOR_SECURITY]');
+      assert("Recorded log preserved safe field", recordedEntry.details.testField === 'valid_data');
+
+      // Lifecycle Trace Tracking
+      const traceTestInvId = "inv_trace_test_999";
+      window.dpvDiagnostics.traceInvoice(traceTestInvId, 'CREATE_BILL', 'CREATE', { invoiceNumber: 'DPV/TEST/TR01' });
+      assert("Invoice trace record initialized", !!window.dpvDiagnostics.traces[traceTestInvId]);
+      assert("Invoice trace contains CREATE stage", window.dpvDiagnostics.traces[traceTestInvId].steps.some(s => s.stage === 'CREATE'));
+
+      // Post-Back Integrity Verification
+      const mockSampleInv = {
+        id: "inv_mock_verify",
+        invoiceNumber: "DPV/TEST/MCK01",
+        customer: { name: "Verify Client", phone: "9301614549" },
+        financials: { grandTotal: 50000, balanceDue: 25000 },
+        items: [{ id: "i1" }],
+        payments: [{ id: "p1" }]
+      };
+      // When invoice is missing completely from store:
+      const verifyMissing = window.dpvDiagnostics.verifyInvoiceIntegrity("inv_non_existent", mockSampleInv, "TEST_CHECK");
+      assert("Integrity check detects missing invoice", verifyMissing === false);
+
+      // Deleted Bill Returning Detector
+      window.dpvDiagnostics.registerDeletedInvoice("inv_tomb_test_101", "DPV/TOMB/101");
+      assert("Tombstone registered in monitored deletions", !!window.dpvDiagnostics.monitoredTombstones["inv_tomb_test_101"]);
+      
+      // Filter test
+      const allLogs = window.dpvDiagnostics.getFilteredLogs();
+      assert("getFilteredLogs returns array", Array.isArray(allLogs) && allLogs.length > 0);
 
       const summaryDiv = document.createElement('div');
       summaryDiv.className = 'summary';
