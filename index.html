@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#1e3a8a">
-  <meta name="description" content="Dewangan Photo & Videography – Professional Studio Invoice & Shooting Management System">
-  <title>Dewangan Photo & Videography – Invoice Management System</title>
+  <meta name="description" content="Dewangan Photo & Videography â€“ Professional Studio Invoice & Shooting Management System">
+  <title>Dewangan Photo & Videography â€“ Invoice Management System</title>
 
   <!-- PWA Manifest & Icons -->
   <link rel="manifest" href="manifest.webmanifest">
@@ -23,9 +23,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@600;700;800&family=Great+Vibes&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/invoice.css">
-  <link rel="stylesheet" href="css/print.css">
+  <link rel="stylesheet" href="css/main.css?v=1.3.4">
+  <link rel="stylesheet" href="css/invoice.css?v=1.3.4">
+  <link rel="stylesheet" href="css/print.css?v=1.3.4">
 </head>
 <body>
 
@@ -115,8 +115,11 @@
       <!-- Top Header Bar -->
       <header class="top-navbar no-print">
         <div class="navbar-left">
-          <button id="menu-toggle-btn" class="menu-toggle-btn" aria-label="Toggle Navigation">
+          <button type="button" id="menu-toggle-btn" class="menu-toggle-btn" aria-label="Toggle Navigation" onclick="window.dpvApp && window.dpvApp.toggleMobileSidebar()">
             <i data-lucide="menu"></i>
+            <span class="hamburger-fallback" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </span>
           </button>
           <h1 id="page-title" class="page-title">Dashboard Overview</h1>
         </div>
@@ -150,21 +153,21 @@
             <div class="kpi-card">
               <div>
                 <div class="kpi-label">Total Billing</div>
-                <div class="kpi-val" id="kpi-total-billing">₹0</div>
+                <div class="kpi-val" id="kpi-total-billing">â‚¹0</div>
               </div>
               <div class="kpi-icon-wrapper kpi-icon-purple"><i data-lucide="indian-rupee"></i></div>
             </div>
             <div class="kpi-card">
               <div>
                 <div class="kpi-label">Total Received</div>
-                <div class="kpi-val" id="kpi-total-received" style="color: var(--success);">₹0</div>
+                <div class="kpi-val" id="kpi-total-received" style="color: var(--success);">â‚¹0</div>
               </div>
               <div class="kpi-icon-wrapper kpi-icon-green"><i data-lucide="check-circle-2"></i></div>
             </div>
             <div class="kpi-card">
               <div>
                 <div class="kpi-label">Pending Balances</div>
-                <div class="kpi-val" id="kpi-total-pending" style="color: var(--danger);">₹0</div>
+                <div class="kpi-val" id="kpi-total-pending" style="color: var(--danger);">â‚¹0</div>
               </div>
               <div class="kpi-icon-wrapper kpi-icon-red"><i data-lucide="alert-circle"></i></div>
             </div>
@@ -248,9 +251,9 @@
                     <th>Customer Name</th>
                     <th>Mobile</th>
                     <th>Event Type</th>
-                    <th>Total (₹)</th>
-                    <th>Paid (₹)</th>
-                    <th>Balance (₹)</th>
+                    <th>Total (â‚¹)</th>
+                    <th>Paid (â‚¹)</th>
+                    <th>Balance (â‚¹)</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -482,10 +485,10 @@
                       <tr>
                         <th style="width: 35%;">Service / Billing Item</th>
                         <th style="width: 25%;">Description</th>
-                        <th style="width: 10%;">Rate (₹)</th>
+                        <th style="width: 10%;">Rate (â‚¹)</th>
                         <th style="width: 8%;">Qty</th>
-                        <th style="width: 10%;">Discount (₹)</th>
-                        <th style="width: 10%;">Amount (₹)</th>
+                        <th style="width: 10%;">Discount (â‚¹)</th>
+                        <th style="width: 10%;">Amount (â‚¹)</th>
                         <th style="width: 2%;"></th>
                       </tr>
                     </thead>
@@ -500,21 +503,21 @@
                   <div style="width: 280px; font-size: 13px;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
                       <span style="color: var(--text-muted);">Services Subtotal:</span>
-                      <strong id="builder-subtotal-val">₹0</strong>
+                      <strong id="builder-subtotal-val">â‚¹0</strong>
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 6px; align-items: center;">
-                      <span style="color: var(--text-muted);">Overall Discount (₹):</span>
+                      <span style="color: var(--text-muted);">Overall Discount (â‚¹):</span>
                       <input type="number" id="builder-overall-discount" class="form-control" inputmode="numeric" style="width: 90px; padding: 4px 8px; text-align: right;" value="0">
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 6px; align-items: center;">
                       <label style="color: var(--text-muted); display: flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer;">
                         <input type="checkbox" id="builder-enable-gst"> Apply GST/Tax (18%)
                       </label>
-                      <span id="builder-gst-val">₹0</span>
+                      <span id="builder-gst-val">â‚¹0</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; border-top: 1.5px solid var(--border-color); padding-top: 6px; font-size: 15px;">
                       <strong>Estimated Total:</strong>
-                      <strong id="builder-grand-total-val" style="color: var(--primary);">₹0</strong>
+                      <strong id="builder-grand-total-val" style="color: var(--primary);">â‚¹0</strong>
                     </div>
                   </div>
                 </div>
@@ -526,7 +529,7 @@
                       <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
                         <i data-lucide="book-open" style="width: 16px; height: 16px; color: var(--accent);"></i> Photo Albums Specification
                       </h4>
-                      <span style="font-size: 11px; color: var(--text-muted);">Explicit album type, sheet count, size, and quantity (e.g. NT Album — 30 Sheets × 1)</span>
+                      <span style="font-size: 11px; color: var(--text-muted);">Explicit album type, sheet count, size, and quantity (e.g. NT Album â€” 30 Sheets Ã— 1)</span>
                     </div>
                     <button type="button" class="btn btn-outline btn-sm" id="add-album-btn"><i data-lucide="plus"></i> + Add Album</button>
                   </div>
@@ -596,15 +599,15 @@
                   <div style="margin-top: 20px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; display: flex; justify-content: space-around; text-align: center;">
                     <div>
                       <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Grand Total</div>
-                      <div style="font-size: 18px; font-weight: 800; color: var(--text-main);" id="payment-summary-grand">₹0</div>
+                      <div style="font-size: 18px; font-weight: 800; color: var(--text-main);" id="payment-summary-grand">â‚¹0</div>
                     </div>
                     <div>
                       <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Total Received</div>
-                      <div style="font-size: 18px; font-weight: 800; color: var(--success);" id="payment-summary-paid">₹0</div>
+                      <div style="font-size: 18px; font-weight: 800; color: var(--success);" id="payment-summary-paid">â‚¹0</div>
                     </div>
                     <div>
                       <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Remaining Balance</div>
-                      <div style="font-size: 18px; font-weight: 800; color: var(--danger);" id="payment-summary-balance">₹0</div>
+                      <div style="font-size: 18px; font-weight: 800; color: var(--danger);" id="payment-summary-balance">â‚¹0</div>
                     </div>
                     <div>
                       <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Status</div>
@@ -760,8 +763,8 @@
                         <th class="col-sno">S.No.</th>
                         <th class="col-desc">DESCRIPTION / SERVICES</th>
                         <th class="col-qty">QTY.</th>
-                        <th class="col-rate">RATE (₹)</th>
-                        <th class="col-amount">AMOUNT (₹)</th>
+                        <th class="col-rate">RATE (â‚¹)</th>
+                        <th class="col-amount">AMOUNT (â‚¹)</th>
                       </tr>
                     </thead>
                     <tbody id="inv-items-tbody">
@@ -778,7 +781,7 @@
                     <div class="inv-payment-body">
                       <div class="inv-pay-row inv-pay-pkg-row">
                         <span class="inv-pay-label">Total Package Amount</span>
-                        <span class="inv-pay-colon">: ₹</span>
+                        <span class="inv-pay-colon">: â‚¹</span>
                         <span class="inv-pay-val" id="inv-pay-package-total">65,000</span>
                       </div>
                       <div class="inv-payments-history-list" id="inv-payments-history-list">
@@ -803,27 +806,27 @@
                       <tr>
                         <td class="label">Sub Total</td>
                         <td class="colon">:</td>
-                        <td class="val">₹ <span id="inv-summary-subtotal">65,000</span></td>
+                        <td class="val">â‚¹ <span id="inv-summary-subtotal">65,000</span></td>
                       </tr>
                       <tr>
                         <td class="label">Discount</td>
                         <td class="colon">:</td>
-                        <td class="val">₹ <span id="inv-summary-discount">0</span></td>
+                        <td class="val">â‚¹ <span id="inv-summary-discount">0</span></td>
                       </tr>
                       <tr class="row-total-amount">
                         <td class="label" id="inv-summary-grand-label">Total Amount</td>
                         <td class="colon">:</td>
-                        <td class="val">₹ <span id="inv-summary-grand">65,000</span></td>
+                        <td class="val">â‚¹ <span id="inv-summary-grand">65,000</span></td>
                       </tr>
                       <tr class="row-paid-amount" id="inv-summary-paid-row">
                         <td class="label">Amount Paid</td>
                         <td class="colon">:</td>
-                        <td class="val">₹ <span id="inv-summary-paid">40,000</span></td>
+                        <td class="val">â‚¹ <span id="inv-summary-paid">40,000</span></td>
                       </tr>
                       <tr class="row-balance" id="inv-summary-balance-row">
                         <td class="label">Balance Amount</td>
                         <td class="colon">:</td>
-                        <td class="val">₹ <span id="inv-summary-balance">25,000</span></td>
+                        <td class="val">â‚¹ <span id="inv-summary-balance">25,000</span></td>
                       </tr>
                     </table>
                   </div>
@@ -846,7 +849,7 @@
                     <div class="inv-sig-box-body"></div>
                   </div>
                   <div class="inv-thankyou-cell">
-                    <div class="inv-thankyou-script">Thank You! <span class="inv-thankyou-heart">♡</span></div>
+                    <div class="inv-thankyou-script">Thank You! <span class="inv-thankyou-heart">â™¡</span></div>
                     <div class="inv-thankyou-sub">FOR YOUR TRUST &amp; SUPPORT</div>
                   </div>
                   <div class="inv-sig-box">
@@ -875,7 +878,7 @@
                 </div>
                 <div class="inv-footer-tagline" id="inv-footer-tagline">
                   <div class="inv-footer-tagline-top" id="inv-footer-tagline-top">Capture</div>
-                  <div class="inv-footer-tagline-bottom" id="inv-footer-tagline-bottom">Your Moments <span class="inv-footer-heart">♡</span></div>
+                  <div class="inv-footer-tagline-bottom" id="inv-footer-tagline-bottom">Your Moments <span class="inv-footer-heart">â™¡</span></div>
                 </div>
               </div>
             </div>
@@ -954,7 +957,7 @@
                   <tr>
                     <th>Service Name</th>
                     <th>Category</th>
-                    <th>Default Price (₹)</th>
+                    <th>Default Price (â‚¹)</th>
                     <th>Description</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -999,7 +1002,7 @@
                     <th>Payment Type</th>
                     <th>Method</th>
                     <th>Reference / UTR</th>
-                    <th>Amount (₹)</th>
+                    <th>Amount (â‚¹)</th>
                     <th>Notes</th>
                     <th style="text-align: right;">Actions</th>
                   </tr>
@@ -1016,7 +1019,7 @@
         <section id="view-terms" class="app-view" style="display: none;">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title"><i data-lucide="shield-check"></i> Terms &amp; Conditions (नियम एवं शर्तें)</h3>
+              <h3 class="card-title"><i data-lucide="shield-check"></i> Terms &amp; Conditions (à¤¨à¤¿à¤¯à¤® à¤à¤µà¤‚ à¤¶à¤°à¥à¤¤à¥‡à¤‚)</h3>
               <button class="btn btn-primary btn-sm" id="add-term-btn"><i data-lucide="plus"></i> Add New Term</button>
             </div>
             <div class="card-body">
@@ -1206,16 +1209,16 @@
         </section>
 
       </main>
-
-      <!-- Mobile Bottom Navigation Bar (PWA Touch Optimized) -->
-      <nav class="mobile-bottom-nav no-print">
-        <a class="mobile-nav-btn active" data-view="view-dashboard"><i data-lucide="layout-dashboard"></i> Home</a>
-        <a class="mobile-nav-btn" data-view="view-invoices"><i data-lucide="file-text"></i> Invoices</a>
-        <a class="mobile-nav-btn" data-view="view-new-invoice"><i data-lucide="plus-circle"></i> New</a>
-        <a class="mobile-nav-btn" data-view="view-calendar"><i data-lucide="calendar"></i> Shoots</a>
-        <a class="mobile-nav-btn" data-view="view-settings"><i data-lucide="settings"></i> Settings</a>
-      </nav>
     </div>
+
+    <!-- Mobile Bottom Navigation Bar (PWA Touch Optimized) -->
+    <nav class="mobile-bottom-nav no-print">
+      <a class="mobile-nav-btn active" data-view="view-dashboard"><i data-lucide="layout-dashboard"></i> Home</a>
+      <a class="mobile-nav-btn" data-view="view-invoices"><i data-lucide="file-text"></i> Invoices</a>
+      <a class="mobile-nav-btn" data-view="view-new-invoice"><i data-lucide="plus-circle"></i> New</a>
+      <a class="mobile-nav-btn" data-view="view-calendar"><i data-lucide="calendar"></i> Shoots</a>
+      <a class="mobile-nav-btn" id="mobile-menu-drawer-btn" onclick="window.dpvApp && window.dpvApp.toggleMobileSidebar(); return false;" title="Open Studio Menu"><i data-lucide="menu"></i> Menu</a>
+    </nav>
   </div>
 
   <!-- MODAL: RECORD PAYMENT -->
@@ -1240,7 +1243,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Amount Paid (₹) <span class="required">*</span></label>
+            <label class="form-label">Amount Paid (â‚¹) <span class="required">*</span></label>
             <input type="number" id="pay-modal-amount" class="form-control" inputmode="numeric" min="1" required>
           </div>
           <div class="form-group">
@@ -1359,7 +1362,7 @@
             <input type="text" id="srv-modal-category" class="form-control" placeholder="e.g. Photography, Videography, Aerial">
           </div>
           <div class="form-group">
-            <label class="form-label">Default Price (₹) <span class="required">*</span></label>
+            <label class="form-label">Default Price (â‚¹) <span class="required">*</span></label>
             <input type="number" id="srv-modal-rate" class="form-control" inputmode="numeric" min="0" required>
           </div>
           <div class="form-group">
@@ -1390,7 +1393,7 @@
             <input type="text" id="pkg-modal-name" class="form-control" placeholder="e.g. Golden Wedding Package" required>
           </div>
           <div class="form-group">
-            <label class="form-label">Package Price (₹) <span class="required">*</span></label>
+            <label class="form-label">Package Price (â‚¹) <span class="required">*</span></label>
             <input type="number" id="pkg-modal-price" class="form-control" inputmode="numeric" min="0" required>
           </div>
           <div class="form-group">
@@ -1428,7 +1431,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Condition Text (Hindi / English) <span class="required">*</span></label>
-            <textarea id="term-modal-text" class="form-control" style="min-height: 90px;" required placeholder="e.g. बुकिंग एडवांस भुगतान प्राप्त होने पर ही कन्फर्म की जाएगी।"></textarea>
+            <textarea id="term-modal-text" class="form-control" style="min-height: 90px;" required placeholder="e.g. à¤¬à¥à¤•à¤¿à¤‚à¤— à¤à¤¡à¤µà¤¾à¤‚à¤¸ à¤­à¥à¤—à¤¤à¤¾à¤¨ à¤ªà¥à¤°à¤¾à¤ªà¥à¤¤ à¤¹à¥‹à¤¨à¥‡ à¤ªà¤° à¤¹à¥€ à¤•à¤¨à¥à¤«à¤°à¥à¤® à¤•à¥€ à¤œà¤¾à¤à¤—à¥€à¥¤"></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -1515,7 +1518,7 @@
             refreshing = true;
             console.log('[PWA] Controller changed. Auto-refreshing app to apply new update...');
             if (window.dpvApp && typeof window.dpvApp.showToast === 'function') {
-              window.dpvApp.showToast('🔄 App automatically updated to latest version! Reloading...', 'info');
+              window.dpvApp.showToast('ðŸ”„ App automatically updated to latest version! Reloading...', 'info');
               setTimeout(() => { window.location.reload(); }, 900);
             } else {
               window.location.reload();
@@ -1674,3 +1677,4 @@
   </script>
 </body>
 </html>
+

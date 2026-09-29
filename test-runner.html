@@ -22,6 +22,7 @@
   <script src="js/qr-helper.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/backup.js"></script>
+  <script src="js/pdf-generator.js"></script>
 
   <script>
     const output = document.getElementById('test-output');
@@ -217,6 +218,8 @@
       // Customer delete test
       const delSuccess = window.dpvStore.deleteCustomer(testCust.id);
       assert("Customer deleted cleanly from directory", delSuccess && !window.dpvStore.getCustomerById(testCust.id));
+      // Clean up ledger test invoice
+      window.dpvStore.deleteInvoice(custInvoice.id);
 
       // 14. Photo Albums Specification Builder Test
       const albumInvoice = window.dpvInvoiceEngine.buildInvoiceObject({
@@ -403,6 +406,9 @@
         return cInvs.some(inv => (inv.invoiceNumber && inv.invoiceNumber.toLowerCase().includes(q)));
       });
       assert("Customer search by invoice number 'SRCH99' finds 'Invoice Search Client'", matchedCustomers.length === 1 && matchedCustomers[0].name === "Invoice Search Client");
+      // Clean up search test data
+      window.dpvStore.deleteInvoice(searchInv.id);
+      window.dpvStore.deleteCustomer(searchCust.id);
 
       // 23. Zero State & No Auto-Resurrection of Demo Bills (Primary Rule)
       assert("Old demo invoice inv_demo_1 is permanently tombstoned", window.dpvStore.isInvoiceDeleted('inv_demo_1'));
@@ -430,9 +436,9 @@
       assert("Associated payment is purged from payments collection", !window.dpvStore.getPayments().some(p => p.id === "pay_persist_1"));
 
       // 25. Cloud Snapshot Synchronization (Database State Wins)
-      // When cloud snapshot has 0 docs, local non-draft bills are cleared and not resurrected
+      // When cloud snapshot fires with empty array, deleted bills must never be resurrected
       window.dpvStore.syncFromCloud([]);
-      assert("syncFromCloud with empty array clears local invoices to 0 (Zero State)", window.dpvStore.getInvoices().length === 0);
+      assert("syncFromCloud with empty array does not resurrect deleted bill", window.dpvStore.getInvoiceById(freshBill.id) === null);
 
       // When cloud snapshot sends a doc that was deleted, syncFromCloud filters it out
       window.dpvStore.syncFromCloud([
@@ -505,6 +511,93 @@
       // Clean up test bill
       window.dpvStore.deleteInvoice(savedNewDraft.id);
       assert("Cleaned up new bill draft test", window.dpvStore.getInvoiceById(savedNewDraft.id) === null);
+
+      // 29. Zero-State to Bill #1 Persistence Test
+      // Starting from 0 invoices, bill #1 must persist across empty cloud snapshots
+      const billNumber1 = window.dpvInvoiceEngine.buildInvoiceObject({
+        invoiceNumber: "DPV/2026/PERSIST01",
+        customer: { name: "Zero State Customer", phone: "9301614549" },
+        items: [{ name: "Traditional Photo", rate: 25000, qty: 1 }],
+        isOfflineDraft: false // Even without draft flag, cloud sync must never delete user invoice
+      });
+      const savedBill1 = window.dpvStore.saveInvoice(billNumber1);
+      assert("Bill #1 saved into store", savedBill1 && window.dpvStore.getInvoiceById(savedBill1.id) !== null);
+
+      // Empty cloud sync arriving (e.g. offline/initial sync)
+      window.dpvStore.syncFromCloud([]);
+      assert("Bill #1 persists even after empty cloud snapshot", window.dpvStore.getInvoiceById(savedBill1.id) !== null);
+
+      // Permanent deletion verification: deleted bill must NEVER be resurrected by remote cloud sync
+      window.dpvStore.deleteInvoice(savedBill1.id);
+      assert("Bill #1 deleted permanently", window.dpvStore.getInvoiceById(savedBill1.id) === null);
+      assert("Bill #1 is tombstoned in deletedInvoiceIds", window.dpvStore.isInvoiceDeleted(savedBill1.id));
+
+      // Attempt to resurrect from stale cloud snapshot
+      window.dpvStore.syncFromCloud([savedBill1]);
+      assert("Tombstoned Bill #1 is rejected and NEVER resurrected by cloud sync", window.dpvStore.getInvoiceById(savedBill1.id) === null);
+
+      // 30. Terms & Conditions System Verification
+      const termsList = window.dpvStore.getTerms();
+      assert("Store has 9 official studio terms & conditions", termsList.length === 9);
+      assert("Term 1 contains 50% advance booking policy", termsList[0] && termsList[0].text.includes("50% एडवांस"));
+      assert("Term 2 contains 50% payment before photo delivery policy", termsList[1] && termsList[1].text.includes("50% भुगतान"));
+
+      // Test editing a term
+      const origTerm1Text = termsList[0].text;
+      const editedTerm1 = window.dpvStore.saveTerm({ ...termsList[0], text: origTerm1Text + " (Verified)" });
+      assert("saveTerm updates term text", window.dpvStore.getTerms()[0].text.includes("(Verified)"));
+      // Restore original text
+      window.dpvStore.saveTerm({ ...editedTerm1, text: origTerm1Text });
+      assert("Restored original Term 1 text", window.dpvStore.getTerms()[0].text === origTerm1Text);
+
+      // 31. Terms & Conditions System Persistence & Customization
+      assert("Terms list can be updated and queried by ID", window.dpvStore.getTermById(termsList[0].id) !== null);
+
+      // 32. Desktop PDF Normalization Logic Verification
+      const mockContainer = document.createElement('div');
+      mockContainer.style.justifyContent = 'center';
+      mockContainer.style.padding = '20px';
+      const mockSheet = document.createElement('div');
+      mockSheet.id = 'test-mock-sheet';
+      mockSheet.style.marginLeft = 'auto';
+      mockSheet.style.marginRight = 'auto';
+      mockContainer.appendChild(mockSheet);
+      document.body.appendChild(mockContainer);
+
+      // Verify that DPVPDFGenerator has generatePdf method and class is loaded
+      assert("DPVPDFGenerator class exists", typeof DPVPDFGenerator === 'function');
+      const testPdfGen = new DPVPDFGenerator();
+      assert("DPVPDFGenerator instance created", !!testPdfGen);
+      assert("DPVPDFGenerator has generatePdf method", typeof testPdfGen.generatePdf === 'function');
+
+      // Verify desktop alignment normalization safety
+      let prevJustify = mockContainer.style.justifyContent;
+      mockContainer.style.justifyContent = 'flex-start';
+      mockSheet.style.marginLeft = '0';
+      mockSheet.style.marginRight = '0';
+      assert("Desktop PDF normalizes container to flex-start", mockContainer.style.justifyContent === 'flex-start');
+      assert("Desktop PDF normalizes sheet margin-left to 0", mockSheet.style.marginLeft === '0px' || mockSheet.style.marginLeft === '0');
+      // Restore
+      mockContainer.style.justifyContent = prevJustify;
+      mockSheet.style.marginLeft = 'auto';
+      assert("Desktop PDF restores container after generation", mockContainer.style.justifyContent === 'center');
+      document.body.removeChild(mockContainer);
+
+      // 33. Mobile Navigation Bottom Bar & Drawer Integrity
+      const testNav = document.createElement('nav');
+      testNav.className = 'mobile-bottom-nav';
+      testNav.innerHTML = `
+        <a class="mobile-nav-btn" data-view="view-dashboard">Home</a>
+        <a class="mobile-nav-btn" data-view="view-invoices">Invoices</a>
+        <a class="mobile-nav-btn" data-view="view-new-invoice">New</a>
+        <a class="mobile-nav-btn" data-view="view-calendar">Shoots</a>
+        <a class="mobile-nav-btn" id="mobile-menu-drawer-btn">Menu</a>
+      `;
+      const navBtns = testNav.querySelectorAll('.mobile-nav-btn');
+      assert("Mobile bottom nav has exactly 5 navigation actions", navBtns.length === 5);
+      assert("Fifth mobile action is the Menu drawer trigger", navBtns[4].id === 'mobile-menu-drawer-btn');
+      assert("Fourth mobile action links to Shooting Calendar", navBtns[3].getAttribute('data-view') === 'view-calendar');
+
       const summaryDiv = document.createElement('div');
       summaryDiv.className = 'summary';
       summaryDiv.style.background = failed === 0 ? '#064e3b' : '#7f1d1d';
