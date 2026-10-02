@@ -445,7 +445,7 @@ class DPVApp {
     list.innerHTML = shoots.map(s => `
       <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <div style="font-size: 11px; font-weight: 700; color: var(--accent);">${new Date(s.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} (${s.dayName || ''})</div>
+          <div style="font-size: 11px; font-weight: 700; color: var(--accent);">${window.DPVDate ? window.DPVDate.formatDateDisplay(s.date) : s.date} (${s.dayName || (window.DPVDate ? window.DPVDate.getDayName(s.date) : '')})</div>
           <div style="font-weight: 700; font-size: 13.5px; color: var(--text-main); margin: 2px 0;">${escapeHtml(s.eventName)} &bull; ${escapeHtml(s.customerName)}</div>
           <div style="font-size: 11px; color: var(--text-muted);"><i data-lucide="map-pin" style="width: 11px; height: 11px; display: inline;"></i> ${escapeHtml(s.venue)}</div>
         </div>
@@ -518,7 +518,7 @@ class DPVApp {
               ${isQuot ? 'QUOTATION' : 'INVOICE'}
             </span>
           </td>
-          <td>${inv.invoiceDate}</td>
+          <td>${window.DPVDate ? window.DPVDate.formatDateSlash(inv.invoiceDate) : inv.invoiceDate}</td>
           <td>
             <div style="font-weight: 600;">${escapeHtml(inv.customer?.name || 'N/A')}</div>
             <div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(inv.customer?.relationName || '')}</div>
@@ -701,7 +701,7 @@ class DPVApp {
     document.getElementById('invoice-builder-form').reset();
     document.getElementById('inv-form-id').value = '';
     document.getElementById('inv-form-status').value = 'draft';
-    document.getElementById('inv-billing-date-input').value = new Date().toISOString().split('T')[0];
+    document.getElementById('inv-billing-date-input').value = window.DPVDate ? window.DPVDate.getTodayDateString() : new Date().toLocaleDateString('en-CA');
 
     // Clear dynamic containers
     document.getElementById('shoot-dates-container').innerHTML = '';
@@ -734,7 +734,7 @@ class DPVApp {
       // Default: add 1 default shoot date and 1 default service row
       this.addShootDateRow({
         eventName: 'Wedding Ceremony',
-        date: new Date().toISOString().split('T')[0],
+        date: window.DPVDate ? window.DPVDate.getTodayDateString() : new Date().toLocaleDateString('en-CA'),
         timings: '10:00 AM – 10:00 PM',
         venue: 'Balod',
         services: ['Traditional Photography', 'Cinematic Video']
@@ -1356,7 +1356,7 @@ class DPVApp {
         </div>
         <div class="form-group">
           <label class="form-label">Payment Date</label>
-          <input type="date" class="form-control form-pay-date" value="${data.date || new Date().toISOString().split('T')[0]}">
+          <input type="date" class="form-control form-pay-date" value="${data.date || (window.DPVDate ? window.DPVDate.getTodayDateString() : new Date().toLocaleDateString('en-CA'))}">
         </div>
         <div class="form-group">
           <label class="form-label">Method</label>
@@ -1565,7 +1565,7 @@ class DPVApp {
           id: `sd_${index + 1}`,
           dayNumber: index + 1,
           date: dt,
-          dayName: new Date(dt).toLocaleDateString('en-US', { weekday: 'long' }),
+          dayName: window.DPVDate ? window.DPVDate.getDayName(dt) : new Date(dt).toLocaleDateString('en-US', { weekday: 'long' }),
           eventName: evName,
           timings: card.querySelector('.shoot-timings')?.value.trim() || '',
           venue: card.querySelector('.shoot-venue')?.value.trim() || event.venue,
@@ -1634,7 +1634,7 @@ class DPVApp {
             id: `pay_${Date.now()}_${index}`,
             type: card.querySelector('.form-pay-type')?.value || window.dpvStore.getPaymentOrdinal(index + 1),
             amount: amt,
-            date: card.querySelector('.form-pay-date')?.value || new Date().toISOString().split('T')[0],
+            date: card.querySelector('.form-pay-date')?.value || (window.DPVDate ? window.DPVDate.getTodayDateString() : new Date().toLocaleDateString('en-CA')),
             method: card.querySelector('.form-pay-method')?.value || 'UPI',
             reference: card.querySelector('.form-pay-ref')?.value.trim() || ''
           });
@@ -1648,7 +1648,7 @@ class DPVApp {
       selectedTerms.push(cb.value);
     });
 
-    const billingDate = document.getElementById('inv-billing-date-input')?.value || new Date().toISOString().split('T')[0];
+    const billingDate = document.getElementById('inv-billing-date-input')?.value || (window.DPVDate ? window.DPVDate.getTodayDateString() : new Date().toLocaleDateString('en-CA'));
     const overallDiscount = parseFloat(document.getElementById('builder-overall-discount')?.value) || 0;
     const enableGst = !!document.getElementById('builder-enable-gst')?.checked;
 
@@ -1835,11 +1835,8 @@ class DPVApp {
     // Document Meta
     document.getElementById('inv-doc-number').textContent = inv.invoiceNumber;
     
-    // Format date as DD / MM / YYYY
-    const d = new Date(inv.invoiceDate);
-    const dateFormatted = !isNaN(d.getTime()) 
-      ? `${String(d.getDate()).padStart(2, '0')} / ${String(d.getMonth() + 1).padStart(2, '0')} / ${d.getFullYear()}`
-      : inv.invoiceDate;
+    // Format date as DD / MM / YYYY (Timezone-safe)
+    const dateFormatted = window.DPVDate ? window.DPVDate.formatDateSlash(inv.invoiceDate) : inv.invoiceDate;
     document.getElementById('inv-doc-date').textContent = dateFormatted;
 
     // Document Type Pill & Label
@@ -1919,15 +1916,12 @@ class DPVApp {
     // Event Details
     document.getElementById('inv-event-type').textContent = ev.type || 'Wedding Shoot';
     
-    // Event Date: check if shootingDates exists
+    // Event Date: check if shootingDates exists (Timezone-safe)
     let evDateStr = dateFormatted;
     if (inv.shootingDates && inv.shootingDates.length > 0) {
       const firstSd = inv.shootingDates[0];
       if (firstSd.date) {
-        const sdDate = new Date(firstSd.date);
-        evDateStr = !isNaN(sdDate.getTime()) 
-          ? `${String(sdDate.getDate()).padStart(2, '0')} / ${String(sdDate.getMonth() + 1).padStart(2, '0')} / ${sdDate.getFullYear()}`
-          : firstSd.date;
+        evDateStr = window.DPVDate ? window.DPVDate.formatDateSlash(firstSd.date) : firstSd.date;
         if (inv.shootingDates.length > 1) {
           evDateStr += ` (${inv.shootingDates.length} Days Shoot)`;
         }
@@ -1945,10 +1939,7 @@ class DPVApp {
       if (shootingDates.length > 0) {
         scheduleSec.style.display = 'block';
         scheduleTbody.innerHTML = shootingDates.map((sd, idx) => {
-          const sdDate = new Date(sd.date);
-          const dateStr = !isNaN(sdDate.getTime())
-            ? sdDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-            : (sd.date || '—');
+          const dateStr = window.DPVDate ? window.DPVDate.formatDateDisplay(sd.date) : (sd.date || '—');
           const timeStr = sd.timings || sd.session || '—';
           const venueStr = [sd.venue, sd.location].filter(Boolean).join(', ') || ev.venue || '—';
 
@@ -1975,10 +1966,7 @@ class DPVApp {
       if (shootingDates.length > 0) {
         evServicesSec.style.display = 'block';
         evServicesGrid.innerHTML = shootingDates.map((sd, idx) => {
-          const sdDate = new Date(sd.date);
-          const dateStr = !isNaN(sdDate.getTime())
-            ? sdDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-            : (sd.date || '');
+          const dateStr = window.DPVDate ? window.DPVDate.formatDateDisplay(sd.date) : (sd.date || '');
           const timeStr = sd.timings || sd.session || '';
           const venueStr = [sd.venue, sd.location].filter(Boolean).join(', ') || '';
 
@@ -2197,10 +2185,7 @@ class DPVApp {
               }
             }
 
-            const dt = p.date ? new Date(p.date) : null;
-            const dateStr = (dt && !isNaN(dt.getTime()))
-              ? `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`
-              : '';
+            const dateStr = p.date ? (window.DPVDate ? window.DPVDate.formatDateCompact(p.date) : p.date) : '';
             const metaParts = [p.method, dateStr, p.reference ? `Ref: ${p.reference}` : ''].filter(Boolean);
             const metaStr = metaParts.length > 0 ? `(${metaParts.join(' • ')})` : '';
 
@@ -2594,7 +2579,7 @@ class DPVApp {
       const p = (inv.payments || []).find(x => x.id === paymentId) || window.dpvStore.getPaymentById(paymentId);
       if (modalTitle) modalTitle.innerHTML = `<i data-lucide="edit-3"></i> Edit Customer Payment`;
       if (amountInput) amountInput.value = p ? p.amount : 0;
-      if (dateInput) dateInput.value = p ? (p.date || new Date().toISOString().split('T')[0]) : new Date().toISOString().split('T')[0];
+      if (dateInput) dateInput.value = p ? (p.date || (window.DPVDate ? window.DPVDate.getTodayDateString() : new Date().toLocaleDateString('en-CA'))) : (window.DPVDate ? window.DPVDate.getTodayDateString() : new Date().toLocaleDateString('en-CA'));
       if (typeInput) typeInput.value = p ? p.type : 'Other Installment';
       if (methodInput) methodInput.value = p ? (p.method || 'UPI') : 'UPI';
       if (refInput) refInput.value = p ? (p.reference || '') : '';
@@ -2602,7 +2587,7 @@ class DPVApp {
       // Record new payment installment
       if (modalTitle) modalTitle.innerHTML = `<i data-lucide="credit-card"></i> Record Customer Payment`;
       if (amountInput) amountInput.value = inv.financials?.balanceDue || 0;
-      if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+      if (dateInput) dateInput.value = window.DPVDate ? window.DPVDate.getTodayDateString() : new Date().toLocaleDateString('en-CA');
       if (typeInput) typeInput.value = (inv.financials?.totalPaid > 0) ? 'Second Payment' : 'Advance Payment';
       if (methodInput) methodInput.value = 'UPI';
       if (refInput) refInput.value = '';
@@ -2719,7 +2704,7 @@ class DPVApp {
     body.innerHTML = `
       <div style="font-size: 13.5px; line-height: 1.8;">
         <div><strong>Event / Ceremony:</strong> <span style="color: var(--primary); font-weight: 700;">${escapeHtml(event.eventName)}</span> (${escapeHtml(event.eventType)})</div>
-        <div><strong>Date:</strong> ${new Date(event.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
+        <div><strong>Date:</strong> ${window.DPVDate ? window.DPVDate.formatFullDate(event.date) : event.date}</div>
         <div><strong>Client Name:</strong> ${escapeHtml(event.customerName)}</div>
         <div><strong>Phone / WhatsApp:</strong> <a href="tel:${event.customerPhone}" style="color: var(--primary);">${escapeHtml(event.customerPhone)}</a></div>
         <div><strong>Venue / Location:</strong> ${escapeHtml(event.venue)}</div>
@@ -2901,7 +2886,7 @@ class DPVApp {
         tableHtml += `
           <tr>
             <td><strong>${escapeHtml(inv.invoiceNumber)}</strong></td>
-            <td>${inv.invoiceDate}</td>
+            <td>${window.DPVDate ? window.DPVDate.formatDateSlash(inv.invoiceDate) : inv.invoiceDate}</td>
             <td><span class="status-pill ${inv.documentType === 'quotation' ? 'status-quotation' : 'status-partial'}">${(inv.documentType || 'invoice').toUpperCase()}</span></td>
             <td>${escapeHtml(inv.event?.type || '')}</td>
             <td><strong>₹${(inv.financials?.grandTotal || 0).toLocaleString('en-IN')}</strong></td>

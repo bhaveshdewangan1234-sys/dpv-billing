@@ -654,6 +654,14 @@
       const allLogs = window.dpvDiagnostics.getFilteredLogs();
       assert("getFilteredLogs returns array", Array.isArray(allLogs) && allLogs.length > 0);
 
+      // 28. Timezone-Safe Date Utility Tests (Zero -1 Day Shifts)
+      assert("DPVDate helper exists globally", !!window.DPVDate);
+      assert("formatDateSlash formats 2026-11-25 as 25 / 11 / 2026", window.DPVDate.formatDateSlash("2026-11-25") === "25 / 11 / 2026");
+      assert("formatDateSlash formats 2026-09-27 as 27 / 09 / 2026", window.DPVDate.formatDateSlash("2026-09-27") === "27 / 09 / 2026");
+      assert("formatDateDisplay formats 2026-11-25 as 25 Nov 2026", window.DPVDate.formatDateDisplay("2026-11-25") === "25 Nov 2026");
+      assert("getDayName calculates Wednesday for 2026-11-25", window.DPVDate.getDayName("2026-11-25") === "Wednesday");
+      assert("getTodayDateString returns YYYY-MM-DD format", /^\d{4}-\d{2}-\d{2}$/.test(window.DPVDate.getTodayDateString()));
+
       const summaryDiv = document.createElement('div');
       summaryDiv.className = 'summary';
       summaryDiv.style.background = failed === 0 ? '#064e3b' : '#7f1d1d';

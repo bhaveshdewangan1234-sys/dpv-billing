@@ -1,7 +1,128 @@
 /**
- * Dewangan Photo & Videography – Invoice Management System
- * Core Invoice Computation Engine, Snapshotting & Immutability Controller
+ * Timezone-Safe Date Utility Helper
+ * Prevents UTC midnight off-by-one errors across all devices and timezones!
  */
+const DPVDate = {
+  /**
+   * Get today's local date formatted as "YYYY-MM-DD"
+   * Avoids UTC conversion bug in toISOString() that shifts dates before 5:30 AM in India!
+   */
+  getTodayDateString(d = new Date()) {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  },
+
+  /**
+   * Parse any date string or object into { year, month, day }
+   * Preserves exact calendar date strings without timezone shifts!
+   */
+  parseDateParts(input) {
+    if (!input) return null;
+    if (typeof input === 'string') {
+      const trimmed = input.trim();
+      // Match YYYY-MM-DD or YYYY/MM/DD
+      const matchIso = trimmed.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+      if (matchIso) {
+        return {
+          year: parseInt(matchIso[1], 10),
+          month: parseInt(matchIso[2], 10),
+          day: parseInt(matchIso[3], 10)
+        };
+      }
+      // Match DD/MM/YYYY or DD-MM-YYYY
+      const matchDmy = trimmed.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+      if (matchDmy) {
+        return {
+          year: parseInt(matchDmy[3], 10),
+          month: parseInt(matchDmy[2], 10),
+          day: parseInt(matchDmy[1], 10)
+        };
+      }
+    }
+    const d = new Date(input);
+    if (!isNaN(d.getTime())) {
+      return {
+        year: d.getFullYear(),
+        month: d.getMonth() + 1,
+        day: d.getDate()
+      };
+    }
+    return null;
+  },
+
+  /**
+   * Format date as "DD / MM / YYYY" (e.g. "25 / 11 / 2026")
+   * Used for Invoice Date & Event Date header on invoices
+   */
+  formatDateSlash(input) {
+    const p = this.parseDateParts(input);
+    if (!p) return input || '';
+    return `${String(p.day).padStart(2, '0')} / ${String(p.month).padStart(2, '0')} / ${p.year}`;
+  },
+
+  /**
+   * Format date as "DD/MM/YYYY" (e.g. "25/11/2026") without spaces
+   * Used for compact payment history rows
+   */
+  formatDateCompact(input) {
+    const p = this.parseDateParts(input);
+    if (!p) return input || '';
+    return `${String(p.day).padStart(2, '0')}/${String(p.month).padStart(2, '0')}/${p.year}`;
+  },
+
+  /**
+   * Format date as "DD Mon YYYY" (e.g. "25 Nov 2026")
+   * Used for Event Schedule Table and Booked Services Cards
+   */
+  formatDateDisplay(input) {
+    const p = this.parseDateParts(input);
+    if (!p) return input || '—';
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthName = months[p.month - 1] || String(p.month);
+    return `${String(p.day).padStart(2, '0')} ${monthName} ${p.year}`;
+  },
+
+  /**
+   * Format date as "DD Mon" (e.g. "25 Nov")
+   */
+  formatDateShort(input) {
+    const p = this.parseDateParts(input);
+    if (!p) return input || '';
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthName = months[p.month - 1] || String(p.month);
+    return `${p.day} ${monthName}`;
+  },
+
+  /**
+   * Get day of the week (e.g. "Wednesday")
+   * Constructs date at 12:00 PM local noon to prevent midnight timezone bleed
+   */
+  getDayName(input) {
+    const p = this.parseDateParts(input);
+    if (!p) return '';
+    const d = new Date(p.year, p.month - 1, p.day, 12, 0, 0);
+    return d.toLocaleDateString('en-US', { weekday: 'long' });
+  },
+
+  /**
+   * Format full descriptive date (e.g. "Wednesday, 25 November 2026")
+   * Used for Calendar Modal
+   */
+  formatFullDate(input) {
+    const p = this.parseDateParts(input);
+    if (!p) return input || '';
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const weekday = this.getDayName(input);
+    return `${weekday}, ${p.day} ${months[p.month - 1]} ${p.year}`;
+  }
+};
+
+if (typeof window !== 'undefined') {
+  window.DPVDate = DPVDate;
+  window.dpvDate = DPVDate;
+}
 
 class DPVInvoiceEngine {
   constructor() {}
@@ -203,7 +324,7 @@ class DPVInvoiceEngine {
         finalNumber = window.dpvStore.getNextInvoiceNumber();
       }
     }
-    const finalDate = invoiceDate || new Date().toISOString().split('T')[0];
+    const finalDate = invoiceDate || DPVDate.getTodayDateString();
 
     // Compute finances
     const effectivePayments = documentType === 'quotation' ? [] : payments;
@@ -267,7 +388,7 @@ class DPVInvoiceEngine {
           id: sd.id || `sd_${i + 1}`,
           dayNumber: sd.dayNumber || (i + 1),
           date: sd.date || '',
-          dayName: sd.dayName || (sd.date ? new Date(sd.date).toLocaleDateString('en-US', { weekday: 'long' }) : ''),
+          dayName: sd.dayName || (sd.date ? DPVDate.getDayName(sd.date) : ''),
           eventName: sd.eventName || sd.title || sd.eventTitle || 'Ceremony',
           timings: sd.timings || (sd.startTime && sd.endTime ? `${sd.startTime} – ${sd.endTime}` : '') || sd.session || '',
           startTime: sd.startTime || '',
@@ -324,7 +445,7 @@ class DPVInvoiceEngine {
             type: pType,
             amount: amt,
             balanceAfter: currentBal,
-            date: p.date || new Date().toISOString().split('T')[0],
+            date: p.date || DPVDate.getTodayDateString(),
             method: p.method || 'UPI',
             reference: p.reference || '',
             notes: p.notes || ''
@@ -385,7 +506,7 @@ class DPVInvoiceEngine {
     
     duplicate.id = 'inv_' + Date.now();
     duplicate.invoiceNumber = newNumber;
-    duplicate.invoiceDate = new Date().toISOString().split('T')[0];
+    duplicate.invoiceDate = DPVDate.getTodayDateString();
     duplicate.status = 'draft';
     duplicate.payments = []; // Fresh payments for duplicate
     duplicate.financials.totalPaid = 0;

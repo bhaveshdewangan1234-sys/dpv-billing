@@ -29,7 +29,7 @@ class DPVCalendar {
               customerPhone: inv.customer ? (inv.customer.whatsapp || inv.customer.phone) : '',
               date: sd.date,
               dayNumber: sd.dayNumber || 1,
-              dayName: sd.dayName || new Date(sd.date).toLocaleDateString('en-US', { weekday: 'long' }),
+              dayName: sd.dayName || (window.DPVDate ? window.DPVDate.getDayName(sd.date) : new Date(sd.date).toLocaleDateString('en-US', { weekday: 'long' })),
               eventName: sd.eventName || inv.event?.type || 'Shoot Event',
               eventType: inv.event ? inv.event.type : 'Wedding',
               venue: sd.venue || inv.event?.venue || 'Studio / On-location',
@@ -55,7 +55,7 @@ class DPVCalendar {
           customerPhone: inv.customer ? (inv.customer.whatsapp || inv.customer.phone) : '',
           date: inv.invoiceDate,
           dayNumber: 1,
-          dayName: new Date(inv.invoiceDate).toLocaleDateString('en-US', { weekday: 'long' }),
+          dayName: window.DPVDate ? window.DPVDate.getDayName(inv.invoiceDate) : new Date(inv.invoiceDate).toLocaleDateString('en-US', { weekday: 'long' }),
           eventName: inv.event.type || 'Shoot Event',
           eventType: inv.event.type || 'Wedding',
           venue: inv.event.venue || 'Balod',
@@ -79,7 +79,7 @@ class DPVCalendar {
    */
   getUpcomingShoots(limit = 10) {
     const all = this.getAllShootingEvents();
-    const today = new Date().toISOString().split('T')[0];
+    const today = window.DPVDate ? window.DPVDate.getTodayDateString() : new Date().toLocaleDateString('en-CA');
     return all.filter(e => e.date >= today).slice(0, limit);
   }
 
@@ -98,7 +98,7 @@ class DPVCalendar {
     const rawFirstDay = new Date(year, month, 1).getDay();
     const firstDayIndex = (rawFirstDay + 6) % 7;
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = window.DPVDate ? window.DPVDate.getTodayDateString() : new Date().toLocaleDateString('en-CA');
 
     const allEvents = this.getAllShootingEvents();
     const eventsByDate = {};
@@ -235,10 +235,7 @@ class DPVCalendar {
     `;
 
     allEvents.forEach(e => {
-      const dt = new Date(e.date);
-      const formattedDate = !isNaN(dt.getTime()) 
-        ? dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-        : e.date;
+      const formattedDate = window.DPVDate ? window.DPVDate.formatDateDisplay(e.date) : e.date;
       const srvList = Array.isArray(e.services) && e.services.length > 0 
         ? e.services.map(s => `<span class="filter-chip" style="font-size: 10px; padding: 2px 6px; margin: 1px;">${escapeHtml(s)}</span>`).join(' ')
         : `<span style="color: var(--text-muted); font-size: 11px;">General Coverage</span>`;

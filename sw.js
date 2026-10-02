@@ -3,7 +3,7 @@
  * Service Worker for PWA Offline Caching & Instant Multi-Device Sync
  */
 
-const CACHE_NAME = 'dpv-invoice-v1.4.1';
+const CACHE_NAME = 'dpv-invoice-v1.4.2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
