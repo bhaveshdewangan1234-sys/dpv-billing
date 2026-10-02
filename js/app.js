@@ -1816,15 +1816,16 @@ class DPVApp {
     setElText('inv-header-srv1', snap.headerServices1, 'Wedding | Pre-Wedding | Engagement');
     setElText('inv-header-srv2', snap.headerServices2, 'Birthday | Anniversary | Maternity Shoot');
     setElText('inv-header-srv3', snap.headerServices3, 'Album Design & Printing | Photo Printing');
-    setElText('inv-header-address', snap.address, 'Shivpuri, Jamul, Durg (C.G.)');
-    setElText('inv-header-phone', snap.mobile, '+91 93016 14549');
+    const studioPhones = [snap.mobile, (snap.altMobile && snap.altMobile !== snap.mobile) ? snap.altMobile : ''].filter(Boolean);
+    const studioPhoneStr = studioPhones.length > 0 ? studioPhones.join(' / ') : '+91 93016 14549';
+    setElText('inv-header-phone', studioPhoneStr, '+91 93016 14549');
     setElText('inv-header-instagram', snap.instagram, 'dewangan_photo_and_videography');
     setElText('inv-header-website', snap.website, 'www.dewanganphotoandvideography.in');
     setElText('inv-header-quote', snap.headerQuote, '"Stories Through Our Lens"');
 
     // Live Dynamic Footer Typography
     setElText('inv-footer-address', snap.address, 'Shivpuri, Jamul, Durg (C.G.)');
-    setElText('inv-footer-phone', snap.mobile, '+91 93016 14549');
+    setElText('inv-footer-phone', studioPhoneStr, '+91 93016 14549');
     setElText('inv-footer-instagram', snap.instagram, 'dewangan_photo_and_videography');
     setElText('inv-footer-website', snap.website, 'www.dewanganphotoandvideography.in');
     setElText('inv-footer-tagline-top', snap.footerTaglineTop || 'Capture', 'Capture');
@@ -3301,6 +3302,7 @@ class DPVApp {
     document.getElementById('set-short-name').value = s.shortName || '';
     document.getElementById('set-owner-name').value = s.ownerName || '';
     document.getElementById('set-mobile').value = s.mobile || '';
+    if (document.getElementById('set-alt-mobile')) document.getElementById('set-alt-mobile').value = (s.altMobile && s.altMobile !== s.mobile) ? s.altMobile : '';
     document.getElementById('set-whatsapp').value = s.whatsapp || '';
     document.getElementById('set-email').value = s.email || '';
     document.getElementById('set-address').value = s.address || '';
@@ -3336,6 +3338,7 @@ class DPVApp {
       shortName: document.getElementById('set-short-name').value.trim(),
       ownerName: document.getElementById('set-owner-name').value.trim(),
       mobile: document.getElementById('set-mobile').value.trim(),
+      altMobile: document.getElementById('set-alt-mobile') ? document.getElementById('set-alt-mobile').value.trim() : '',
       whatsapp: document.getElementById('set-whatsapp').value.trim(),
       email: document.getElementById('set-email').value.trim(),
       address: document.getElementById('set-address').value.trim(),

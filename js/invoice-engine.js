@@ -128,7 +128,7 @@ class DPVInvoiceEngine {
       shortName: current.shortName || "DPV",
       ownerName: current.ownerName || "Bhavesh Dewangan",
       mobile: current.mobile || "+91 93016 14549",
-      altMobile: current.altMobile || "+91 93016 14549",
+      altMobile: current.altMobile || "+91 99818 85793",
       whatsapp: current.whatsapp || current.mobile || "9301614549",
       email: current.email || "dewanganstudio@gmail.com",
       address: current.address || "Shivpuri, Jamul, Durg (C.G.)",

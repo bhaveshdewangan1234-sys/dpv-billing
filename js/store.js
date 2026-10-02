@@ -20,7 +20,7 @@ class DPVStore {
         shortName: "DPV",
         ownerName: "Bhavesh Dewangan",
         mobile: "+91 93016 14549",
-        altMobile: "+91 93016 14549",
+        altMobile: "+91 99818 85793",
         whatsapp: "9301614549",
         email: "dewanganstudio@gmail.com",
         address: "Shivpuri, Jamul, Durg (C.G.)",
@@ -319,7 +319,7 @@ class DPVStore {
             // Update businessSnapshot to official contact & tagline
             if (inv.businessSnapshot) {
               inv.businessSnapshot.mobile = "+91 93016 14549";
-              inv.businessSnapshot.altMobile = "+91 93016 14549";
+              inv.businessSnapshot.altMobile = "+91 99818 85793";
               inv.businessSnapshot.whatsapp = "9301614549";
               inv.businessSnapshot.upiId = "9301614549@ybl";
               inv.businessSnapshot.footerTagline = "Capture Your Moments";

@@ -139,7 +139,7 @@ Thank you for booking with Dewangan Photo & Videography for your *${invoice.even
 *Payment Status:* ${invoice.paymentStatus}
 
 UPI Payment ID: *${snap.upiId || '9301614549@ybl'}*
-For any inquiries, contact: ${snap.mobile || '+91 93016 14549'}
+For any inquiries, contact: ${[snap.mobile, (snap.altMobile && snap.altMobile !== snap.mobile) ? snap.altMobile : ''].filter(Boolean).join(' / ') || '+91 93016 14549'}
 _We capture your memories forever._`;
 
     // 1. Try Web Share API with File (Mobile Chrome/Safari)
