@@ -6,8 +6,8 @@
 @media print {
   @page {
     size: A4 portrait;
-    /* Safe margins (approx 0.8 inch / 20mm) on all 4 sides so physical printers never cut off Page 1 or Page 2 */
-    margin: 20mm 18mm 20mm 18mm;
+    /* Margin 0 suppresses browser default header (title/date) and footer (URL and page numbers) */
+    margin: 0 !important;
   }
 
   /* Reset layout for pure paper printing */

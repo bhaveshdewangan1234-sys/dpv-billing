@@ -47,52 +47,49 @@ class DPVApp {
       const viewParam = urlParams.get('view');
 
       if (viewParam) {
-        if (!window.dpvAuth.currentUser) {
-          window.dpvAuth.login('admin', 'DPV@9301614549Kumar');
+        if (window.dpvAuth.currentUser) {
+          setTimeout(() => {
+            if (viewParam === 'view-new-invoice') {
+              this.startNewInvoice();
+            } else {
+              this.navigateTo(viewParam);
+            }
+            if (urlParams.get('open_menu') === '1') {
+              this.toggleMobileSidebar();
+            }
+          }, 50);
         }
-        setTimeout(() => {
-          if (viewParam === 'view-new-invoice') {
-            this.startNewInvoice();
-          } else {
-            this.navigateTo(viewParam);
-          }
-          if (urlParams.get('open_menu') === '1') {
-            this.toggleMobileSidebar();
-          }
-        }, 50);
       } else if (urlParams.get('open_menu') === '1') {
-        if (!window.dpvAuth.currentUser) {
-          window.dpvAuth.login('admin', 'DPV@9301614549Kumar');
+        if (window.dpvAuth.currentUser) {
+          setTimeout(() => this.toggleMobileSidebar(), 100);
         }
-        setTimeout(() => this.toggleMobileSidebar(), 100);
       } else if (urlParams.get('preview') || urlParams.get('invoice')) {
         const reqInvId = urlParams.get('invoice');
-        if (!window.dpvAuth.currentUser) {
-          window.dpvAuth.login('admin', 'DPV@9301614549Kumar');
+        if (window.dpvAuth.currentUser) {
+          setTimeout(() => {
+            const invoices = window.dpvStore.getInvoices();
+            const targetId = reqInvId || (invoices.length > 0 ? invoices[0].id : null);
+            if (targetId) {
+              this.openInvoicePreview(targetId);
+            } else {
+              this.navigateTo('view-invoices');
+            }
+            if (urlParams.get('standalone') === '1') {
+              const sidebar = document.getElementById('sidebar');
+              if (sidebar) sidebar.style.display = 'none';
+              const topNav = document.querySelector('.top-navbar');
+              if (topNav) topNav.style.display = 'none';
+              const actBar = document.querySelector('.preview-action-bar');
+              if (actBar) actBar.style.display = 'none';
+              const mainWrap = document.querySelector('.main-wrapper');
+              if (mainWrap) { mainWrap.style.margin = '0'; mainWrap.style.minHeight = 'auto'; }
+              const pageBody = document.querySelector('.page-body');
+              if (pageBody) pageBody.style.padding = '0';
+              const pageCont = document.querySelector('.invoice-page-container');
+              if (pageCont) { pageCont.style.padding = '0'; pageCont.style.background = '#ffffff'; }
+            }
+          }, 30);
         }
-        setTimeout(() => {
-          const invoices = window.dpvStore.getInvoices();
-          const targetId = reqInvId || (invoices.length > 0 ? invoices[0].id : null);
-          if (targetId) {
-            this.openInvoicePreview(targetId);
-          } else {
-            this.navigateTo('view-invoices');
-          }
-          if (urlParams.get('standalone') === '1') {
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar) sidebar.style.display = 'none';
-            const topNav = document.querySelector('.top-navbar');
-            if (topNav) topNav.style.display = 'none';
-            const actBar = document.querySelector('.preview-action-bar');
-            if (actBar) actBar.style.display = 'none';
-            const mainWrap = document.querySelector('.main-wrapper');
-            if (mainWrap) { mainWrap.style.margin = '0'; mainWrap.style.minHeight = 'auto'; }
-            const pageBody = document.querySelector('.page-body');
-            if (pageBody) pageBody.style.padding = '0';
-            const pageCont = document.querySelector('.invoice-page-container');
-            if (pageCont) { pageCont.style.padding = '0'; pageCont.style.background = '#ffffff'; }
-          }
-        }, 30);
       }
     } catch (e) {
       console.warn("Direct preview routing warning:", e);
@@ -862,11 +859,18 @@ class DPVApp {
     document.getElementById('sidebar-backdrop')?.classList.remove('active');
   }
 
-  toggleMobileSidebar() {
+  toggleMobileSidebar(forceState) {
+    const now = Date.now();
+    if (this._lastSidebarToggle && (now - this._lastSidebarToggle < 250)) {
+      return;
+    }
+    this._lastSidebarToggle = now;
     const sidebar = document.getElementById('sidebar');
     const backdrop = document.getElementById('sidebar-backdrop');
     if (sidebar) {
-      const isOpen = sidebar.classList.toggle('open');
+      const isOpen = (forceState !== undefined)
+        ? sidebar.classList.toggle('open', forceState)
+        : sidebar.classList.toggle('open');
       if (backdrop) {
         backdrop.classList.toggle('active', isOpen);
       }
@@ -2354,9 +2358,13 @@ class DPVApp {
       sheet.style.marginBottom = '';
     }
 
+    const prevTitle = document.title;
+    document.title = '';
+
     window.print();
 
     setTimeout(() => {
+      document.title = prevTitle;
       if (wasFit && container) container.classList.add('fit-screen');
       if (sheet) {
         sheet.style.transform = prevTransform;

@@ -52,16 +52,27 @@ class DPVPDFGenerator {
     let prevMarginLeft = '';
     let prevMarginRight = '';
 
-    if (isDesktop && invoiceElement && invoiceElement.parentElement) {
-      desktopContainer = invoiceElement.parentElement;
-      prevJustify = desktopContainer.style.justifyContent;
-      prevPad = desktopContainer.style.padding;
-      prevMarginLeft = invoiceElement.style.marginLeft;
-      prevMarginRight = invoiceElement.style.marginRight;
-      desktopContainer.style.justifyContent = 'flex-start';
-      desktopContainer.style.padding = '0';
-      invoiceElement.style.marginLeft = '0';
-      invoiceElement.style.marginRight = '0';
+    if (isDesktop) {
+      // Desktop fix: html2canvas calculates crop offset from element's viewport getBoundingClientRect().left
+      // On desktop (screen > 860px), the container is centered in wide viewport, causing a positive left offset
+      // that html2canvas shifts leftward, cutting off the left half and leaving blank space on the right.
+      // Setting x: 0 forces html2canvas to render from the exact left origin (x=0) with zero clipping.
+      opt.html2canvas.x = 0;
+      opt.html2canvas.y = 0;
+      opt.html2canvas.scrollX = 0;
+      opt.html2canvas.scrollY = 0;
+
+      if (invoiceElement && invoiceElement.parentElement) {
+        desktopContainer = invoiceElement.parentElement;
+        prevJustify = desktopContainer.style.justifyContent;
+        prevPad = desktopContainer.style.padding;
+        prevMarginLeft = invoiceElement.style.marginLeft;
+        prevMarginRight = invoiceElement.style.marginRight;
+        desktopContainer.style.justifyContent = 'flex-start';
+        desktopContainer.style.padding = '0';
+        invoiceElement.style.marginLeft = '0';
+        invoiceElement.style.marginRight = '0';
+      }
     }
 
     try {
@@ -170,3 +181,4 @@ _We capture your memories forever._`;
 }
 
 window.dpvPdfGenerator = new DPVPDFGenerator();
+window.dpvPdf = window.dpvPdfGenerator;

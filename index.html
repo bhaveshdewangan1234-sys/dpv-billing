@@ -23,9 +23,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@600;700;800&family=Great+Vibes&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/main.css?v=1.3.6">
-  <link rel="stylesheet" href="css/invoice.css?v=1.3.6">
-  <link rel="stylesheet" href="css/print.css?v=1.3.6">
+  <link rel="stylesheet" href="css/main.css?v=1.3.7">
+  <link rel="stylesheet" href="css/invoice.css?v=1.3.7">
+  <link rel="stylesheet" href="css/print.css?v=1.3.7">
 </head>
 <body>
 
@@ -116,7 +116,7 @@
       <!-- Top Header Bar -->
       <header class="top-navbar no-print">
         <div class="navbar-left">
-          <button type="button" id="menu-toggle-btn" class="menu-toggle-btn" aria-label="Toggle Navigation" onclick="window.dpvApp && window.dpvApp.toggleMobileSidebar()">
+          <button type="button" id="menu-toggle-btn" class="menu-toggle-btn" aria-label="Toggle Navigation">
             <i data-lucide="menu"></i>
             <span class="hamburger-fallback" aria-hidden="true">
               <span></span><span></span><span></span>
@@ -1323,7 +1323,7 @@
       <a class="mobile-nav-btn" data-view="view-invoices"><i data-lucide="file-text"></i> Invoices</a>
       <a class="mobile-nav-btn" data-view="view-new-invoice"><i data-lucide="plus-circle"></i> New</a>
       <a class="mobile-nav-btn" data-view="view-calendar"><i data-lucide="calendar"></i> Shoots</a>
-      <a class="mobile-nav-btn" id="mobile-menu-drawer-btn" onclick="window.dpvApp && window.dpvApp.toggleMobileSidebar(); return false;" title="Open Studio Menu"><i data-lucide="menu"></i> Menu</a>
+      <a class="mobile-nav-btn" id="mobile-menu-drawer-btn" title="Open Studio Menu"><i data-lucide="menu"></i> Menu</a>
     </nav>
   </div>
 
@@ -1642,7 +1642,7 @@
             refreshing = true;
             console.log('[PWA] Controller changed. Auto-refreshing app to apply new update...');
             if (window.dpvApp && typeof window.dpvApp.showToast === 'function') {
-              window.dpvApp.showToast('ðŸ”„ App automatically updated to latest version! Reloading...', 'info');
+              window.dpvApp.showToast('🔄 App automatically updated to latest version! Reloading...', 'info');
               setTimeout(() => { window.location.reload(); }, 900);
             } else {
               window.location.reload();
